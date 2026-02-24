@@ -2,6 +2,10 @@
 
 Build a labeled dataset of Geograph ground-level images matched to UKCEH Land Cover Map (LCM) labels.
 
+## Tracking
+
+Implementation progress is tracked in `TASKS.md`.
+
 ## Current status
 
 This repository is scaffolded with:
@@ -37,4 +41,3 @@ Pipeline outputs are written under `outputs/` including:
 - `outputs/pipeline_run.json`
 - `outputs/pipeline_events.jsonl`
 - `outputs/<stage>/_SUCCESS.json`
-
