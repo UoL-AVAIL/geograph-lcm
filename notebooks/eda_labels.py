@@ -12,12 +12,16 @@ try:
     import matplotlib.pyplot as plt
     from matplotlib.patches import Polygon as MplPolygon
 except Exception as exc:  # pragma: no cover
-    raise RuntimeError("matplotlib is required for EDA plotting. Install with pip install matplotlib") from exc
+    raise RuntimeError(
+        "matplotlib is required for EDA plotting. Install with pip install matplotlib"
+    ) from exc
 
 try:
     from PIL import Image
 except Exception as exc:  # pragma: no cover
-    raise RuntimeError("Pillow is required for image panel EDA. Install with pip install pillow") from exc
+    raise RuntimeError(
+        "Pillow is required for image panel EDA. Install with pip install pillow"
+    ) from exc
 
 
 def parse_args() -> argparse.Namespace:
@@ -100,7 +104,9 @@ def main() -> None:
         "unique_lcm_l3_classes": len(l3_counts),
         "top_lcm_l3": l3_counts.most_common(10),
         "georef_confidence_counts": dict(confidence_counts),
-        "capture_year_counts": dict(sorted((k, v) for k, v in year_counts.items() if k is not None)),
+        "capture_year_counts": dict(
+            sorted((k, v) for k, v in year_counts.items() if k is not None)
+        ),
         "labels_path": str(labels_path),
         "example_panel": str(out_dir / "class_examples.png"),
     }
@@ -218,7 +224,9 @@ def _class_examples_panel(
     if not grouped:
         return
 
-    ranked_classes = sorted(grouped.keys(), key=lambda c: len(grouped[c]), reverse=True)[:max_classes]
+    ranked_classes = sorted(grouped.keys(), key=lambda c: len(grouped[c]), reverse=True)[
+        :max_classes
+    ]
     n_rows = len(ranked_classes)
     n_cols = examples_per_class
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(2.2 * n_cols, 2.2 * n_rows))

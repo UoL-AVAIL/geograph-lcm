@@ -52,4 +52,3 @@ def load_lcm_catalog(path: Path) -> list[LCMAsset]:
             )
         )
     return sorted(assets, key=lambda a: a.year)
-

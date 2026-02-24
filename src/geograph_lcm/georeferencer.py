@@ -83,7 +83,9 @@ def _georeference_record(record: dict[str, Any], max_georef_radius_m: float) -> 
     precision = _coordinate_precision(record)
     radius_m = _radius_from_decimal_places(precision)
     confidence = _confidence_from_radius(radius_m, max_georef_radius_m=max_georef_radius_m)
-    score = _confidence_score(confidence, radius_m=radius_m, max_georef_radius_m=max_georef_radius_m)
+    score = _confidence_score(
+        confidence, radius_m=radius_m, max_georef_radius_m=max_georef_radius_m
+    )
     return {
         "georef_confidence": confidence,
         "georef_confidence_score": score,

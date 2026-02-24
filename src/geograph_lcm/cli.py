@@ -47,16 +47,14 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    print(
-        r"""
+    print(r"""
                                                 .__              .__
    ____   ____  ____   ________________  ______ |  |__           |  |   ____   _____
   / ___\_/ __ \/  _ \ / ___\_  __ \__  \ \____ \|  |  \   ______ |  | _/ ___\ /     \
  / /_/  >  ___(  <_> ) /_/  >  | \// __ \|  |_> >   Y  \ /_____/ |  |_\  \___|  Y Y  \
  \___  / \___  >____/\___  /|__|  (____  /   __/|___|  /         |____/\___  >__|_|  /
 /_____/      \/     /_____/            \/|__|        \/                    \/      \/
-""".strip("\n")
-    )
+""".strip("\n"))
     print(f"[pipeline] from={args.from_stage} to={args.to_stage} config={args.config}")
     config_path = Path(args.config)
     config = load_pipeline_config(config_path)

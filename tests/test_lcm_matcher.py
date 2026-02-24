@@ -56,7 +56,9 @@ def test_lcm_matcher_preflight_raises_on_checksum_mismatch(tmp_path: Path) -> No
         )
 
 
-def test_lcm_matcher_writes_matched_manifest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_lcm_matcher_writes_matched_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     raster = tmp_path / "lcm2015gb25m.tif"
     raster.write_bytes(b"fake-raster-bytes")
     checksum = hashlib.sha256(b"fake-raster-bytes").hexdigest()
@@ -96,7 +98,12 @@ def test_lcm_matcher_writes_matched_manifest(tmp_path: Path, monkeypatch: pytest
     assert summary["records_written"] == 2
     assert summary["match_status_counts"]["matched"] == 1
     assert summary["match_status_counts"]["missing_coordinates"] == 1
-    rows = (tmp_path / "match" / "matched_manifest.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    rows = (
+        (tmp_path / "match" / "matched_manifest.jsonl")
+        .read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
     parsed = [json.loads(row) for row in rows]
     assert parsed[0]["selected_lcm_year"] == 2015
     assert parsed[0]["lcm_value"] == 7

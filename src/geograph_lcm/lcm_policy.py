@@ -12,7 +12,9 @@ class LCMSelection:
     selection_reason: str
 
 
-def select_lcm_asset(capture_year: int | None, assets: list[LCMAsset]) -> tuple[LCMAsset, LCMSelection]:
+def select_lcm_asset(
+    capture_year: int | None, assets: list[LCMAsset]
+) -> tuple[LCMAsset, LCMSelection]:
     if not assets:
         raise ValueError("No LCM assets configured")
 
@@ -40,4 +42,3 @@ def select_lcm_asset(capture_year: int | None, assets: list[LCMAsset]) -> tuple[
         selected_lcm_year=nearest_year,
         selection_reason="nearest_available_year",
     )
-

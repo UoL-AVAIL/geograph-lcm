@@ -34,4 +34,3 @@ def write_jsonl_event(log_path: Path, event: dict[str, Any]) -> None:
     with log_path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(event, sort_keys=True))
         fh.write("\n")
-

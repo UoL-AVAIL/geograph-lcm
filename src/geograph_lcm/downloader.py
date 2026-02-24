@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 
 import requests
+
 try:
     from tqdm import tqdm
 except Exception:  # pragma: no cover - fallback for environments without tqdm installed
@@ -178,7 +179,10 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     progress = _make_progress(total=max_items, show_progress=show_progress)
 
     try:
-        with requests.Session() as session, metadata_path.open("w", encoding="utf-8") as metadata_fh:
+        with (
+            requests.Session() as session,
+            metadata_path.open("w", encoding="utf-8") as metadata_fh,
+        ):
             page = 1
             while items_written < max_items:
                 # print(f"[download] fetching page={page} items_written={items_written}")

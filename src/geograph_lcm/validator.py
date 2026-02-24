@@ -95,7 +95,9 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         rng = random.Random(random_seed)
         random_ids = _sample_random_ids(rows, n=random_sample_size, rng=rng)
         random_path = samples_dir / "random_ids.txt"
-        random_path.write_text("\n".join(random_ids) + ("\n" if random_ids else ""), encoding="utf-8")
+        random_path.write_text(
+            "\n".join(random_ids) + ("\n" if random_ids else ""), encoding="utf-8"
+        )
         samples["random_ids"] = str(random_path)
 
         by_class = _sample_ids_by_class(
@@ -162,14 +164,18 @@ def _missing_value_counts(rows: list[dict[str, str]], columns: list[str]) -> dic
 
 
 def _distribution_metrics(rows: list[dict[str, str]]) -> dict[str, Any]:
-    class_counts = Counter(row.get("lcm_l3", "").strip() for row in rows if row.get("lcm_l3", "").strip())
+    class_counts = Counter(
+        row.get("lcm_l3", "").strip() for row in rows if row.get("lcm_l3", "").strip()
+    )
     conf_counts = Counter(
         row.get("georef_confidence", "").strip()
         for row in rows
         if row.get("georef_confidence", "").strip()
     )
     year_counts = Counter(
-        _parse_year(row.get("timestamp", "").strip()) for row in rows if row.get("timestamp", "").strip()
+        _parse_year(row.get("timestamp", "").strip())
+        for row in rows
+        if row.get("timestamp", "").strip()
     )
     year_counts.pop(None, None)
     return {
@@ -177,7 +183,9 @@ def _distribution_metrics(rows: list[dict[str, str]]) -> dict[str, Any]:
         "unique_classes_l3": len(class_counts),
         "top_classes_l3": class_counts.most_common(10),
         "georef_confidence_counts": dict(conf_counts),
-        "capture_year_counts": dict(sorted((k, v) for k, v in year_counts.items() if k is not None)),
+        "capture_year_counts": dict(
+            sorted((k, v) for k, v in year_counts.items() if k is not None)
+        ),
     }
 
 
@@ -204,7 +212,9 @@ def _sample_ids_by_class(
         if not cls or not item_id:
             continue
         grouped.setdefault(cls, []).append(item_id)
-    top_classes = sorted(grouped.keys(), key=lambda c: len(grouped[c]), reverse=True)[:top_n_classes]
+    top_classes = sorted(grouped.keys(), key=lambda c: len(grouped[c]), reverse=True)[
+        :top_n_classes
+    ]
     out: dict[str, list[str]] = {}
     for cls in top_classes:
         unique_ids = sorted(set(grouped[cls]))
@@ -220,7 +230,9 @@ def _parse_year(value: str) -> int | None:
     return None
 
 
-def _policy_checks(rows: list[dict[str, str]], fieldnames: list[str], policy_cfg: dict[str, Any]) -> dict[str, Any]:
+def _policy_checks(
+    rows: list[dict[str, str]], fieldnames: list[str], policy_cfg: dict[str, Any]
+) -> dict[str, Any]:
     licensing_cfg = policy_cfg.get("licensing", {})
     ethics_cfg = policy_cfg.get("ethics", {})
 
@@ -229,7 +241,9 @@ def _policy_checks(rows: list[dict[str, str]], fieldnames: list[str], policy_cfg
     return {"licensing": licensing, "ethics": ethics}
 
 
-def _licensing_policy_check(rows: list[dict[str, str]], licensing_cfg: dict[str, Any]) -> dict[str, Any]:
+def _licensing_policy_check(
+    rows: list[dict[str, str]], licensing_cfg: dict[str, Any]
+) -> dict[str, Any]:
     enforce = bool(licensing_cfg.get("enforce_allowed_licenses", False))
     allowed_raw = licensing_cfg.get("allowed_licenses", [])
     allowed_norm = {_normalize_license(v) for v in allowed_raw if str(v).strip()}

@@ -67,7 +67,9 @@ def test_run_requires_api_key(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -
         downloader.run(config={}, input_dir=None, output_dir=tmp_path)
 
 
-def test_downloader_writes_metadata_and_images(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_downloader_writes_metadata_and_images(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("GEOGRAPH_API_KEY", "test-key")
 
     scripted = [
@@ -141,9 +143,12 @@ def test_downloader_writes_metadata_and_images(tmp_path: Path, monkeypatch: pyte
     assert summary["pages_fetched"] == 3
     assert (tmp_path / "download" / "raw" / "images" / "a1.jpg").exists()
     assert (tmp_path / "download" / "raw" / "images" / "a2.jpg").exists()
-    metadata_lines = (tmp_path / "download" / "raw" / "metadata.jsonl").read_text(
-        encoding="utf-8"
-    ).strip().splitlines()
+    metadata_lines = (
+        (tmp_path / "download" / "raw" / "metadata.jsonl")
+        .read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
     assert len(metadata_lines) == 2
     first = json.loads(metadata_lines[0])
     assert first["id"] == "a1"
@@ -182,7 +187,10 @@ def test_requires_saved_search_id_by_default(
         downloader.run(
             config={
                 "geograph": {"api_base_url": "https://api.geograph.org.uk"},
-                "downloader": {"query": {"text": "leicestershire"}, "prefer_details_api_image_url": False},
+                "downloader": {
+                    "query": {"text": "leicestershire"},
+                    "prefer_details_api_image_url": False,
+                },
             },
             input_dir=None,
             output_dir=tmp_path / "download",
@@ -314,7 +322,7 @@ def test_prefers_details_api_image_url_when_enabled(
         FakeResponse(
             headers={"content-type": "application/xml"},
             content=(
-                b"<response><img src=\"https://s0.geograph.org.uk/geophotos/08/13/18/8131806_full.jpg\" /></response>"
+                b'<response><img src="https://s0.geograph.org.uk/geophotos/08/13/18/8131806_full.jpg" /></response>'
             ),
         ),
         FakeResponse(content=b"full-image-bytes"),
@@ -348,9 +356,12 @@ def test_prefers_details_api_image_url_when_enabled(
     )
 
     assert summary["items_written"] == 1
-    metadata_lines = (tmp_path / "download" / "raw" / "metadata.jsonl").read_text(
-        encoding="utf-8"
-    ).strip().splitlines()
+    metadata_lines = (
+        (tmp_path / "download" / "raw" / "metadata.jsonl")
+        .read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
     first = json.loads(metadata_lines[0])
     assert first["image_url_source"] == "details_api"
     assert first["image_url"].endswith("8131806_full.jpg")

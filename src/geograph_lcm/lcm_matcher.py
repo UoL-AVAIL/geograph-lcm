@@ -21,9 +21,7 @@ def run(
     ensure_dir(output_dir)
     source_manifest = _resolve_source_manifest(input_dir)
     output_manifest = output_dir / "matched_manifest.jsonl"
-    taxonomy_path = Path(
-        config.get("lcm", {}).get("taxonomy_path", "config/lcm_taxonomy.yaml")
-    )
+    taxonomy_path = Path(config.get("lcm", {}).get("taxonomy_path", "config/lcm_taxonomy.yaml"))
     taxonomy = _load_lcm_taxonomy(taxonomy_path)
 
     input_records = 0
@@ -57,7 +55,9 @@ def run(
                         continue
 
                     capture_year = _to_int(record.get("capture_year"))
-                    asset, selection = select_lcm_asset(capture_year=capture_year, assets=lcm_assets)
+                    asset, selection = select_lcm_asset(
+                        capture_year=capture_year, assets=lcm_assets
+                    )
                     if asset.year not in preflight_cache:
                         preflight_cache[asset.year] = _validate_asset_checksum(asset)
                     preflight_by_year[str(asset.year)] = preflight_cache[asset.year]

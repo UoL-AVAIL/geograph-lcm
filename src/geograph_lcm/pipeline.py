@@ -7,7 +7,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-from geograph_lcm import curator, dataset_writer, downloader, georeferencer, ingestor, lcm_matcher, validator
+from geograph_lcm import (
+    curator,
+    dataset_writer,
+    downloader,
+    georeferencer,
+    ingestor,
+    lcm_matcher,
+    validator,
+)
 from geograph_lcm.config import LCMAsset
 from geograph_lcm.stage_utils import (
     ensure_dir,

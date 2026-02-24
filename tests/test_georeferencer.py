@@ -54,7 +54,9 @@ def test_georeferencer_assigns_confidence_levels(tmp_path: Path) -> None:
     assert summary["confidence_counts"]["medium"] == 1
     assert summary["confidence_counts"]["none"] == 1
 
-    rows = (out_dir / "georeferenced_manifest.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    rows = (
+        (out_dir / "georeferenced_manifest.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    )
     parsed = [json.loads(row) for row in rows]
     by_id = {row["id"]: row for row in parsed}
     assert by_id["high-1"]["georef_confidence"] == "high"
@@ -74,4 +76,3 @@ def test_georeferencer_handles_missing_source_manifest(tmp_path: Path) -> None:
     assert summary["input_records"] == 0
     assert summary["records_written"] == 0
     assert (out_dir / "georeferenced_manifest.jsonl").exists()
-

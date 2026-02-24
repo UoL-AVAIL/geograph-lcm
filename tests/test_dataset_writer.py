@@ -75,4 +75,3 @@ def test_dataset_writer_exports_labels_and_images(tmp_path: Path) -> None:
     text = readme_path.read_text(encoding="utf-8")
     assert "rows: 1" in text
     assert "lcm years used: 2015" in text
-

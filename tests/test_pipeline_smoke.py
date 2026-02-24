@@ -111,5 +111,7 @@ def test_from_stage_uses_true_upstream_input_dir(tmp_path: Path) -> None:
         force=True,
     )
 
-    summary = json.loads((tmp_path / "outputs" / "curate" / "curate_summary.json").read_text(encoding="utf-8"))
+    summary = json.loads(
+        (tmp_path / "outputs" / "curate" / "curate_summary.json").read_text(encoding="utf-8")
+    )
     assert summary["input_dir"] == str(tmp_path / "outputs" / "ingest")
