@@ -8,7 +8,7 @@ Implementation progress is tracked in `TASKS.md`.
 
 ## Current status
 
-This repository is scaffolded with:
+This repository includes:
 
 - stage modules and a thin orchestrator (`run_pipeline.py`);
 - config files for pipeline settings and multi-year LCM catalog (`2015-2024`);
@@ -17,17 +17,23 @@ This repository is scaffolded with:
   - nearest available year when not available;
   - tie-break to earlier year;
   - fallback to latest available year if capture year is missing;
-- JSON run manifest and stage success markers for resume behavior.
-
-Stage logic is currently stubbed and writes auditable summaries. Full Geograph API calls, EXIF ingest, spatial matching, and dataset export logic are the next implementation steps.
+- JSON run manifest and stage success markers for resume behavior;
+- a working Geograph downloader with:
+  - `syndicator.php` paging + retry/rate limiting;
+  - optional CLI API key (`--geograph-api-key`);
+  - optional saved search ID (`--geograph-search-id` or `downloader.query.i`);
+  - strict full-res image resolution via details API (no thumb fallback by default);
+  - capture-year and license filtering before image download;
+  - cache-aware skip of already downloaded items;
+  - interrupted/failed run summaries and `tqdm` progress bar support.
 
 ## Constraints
 
 - Geograph ingestion must use the official Geograph Image APIs only.
 - API credentials can be passed with `--geograph-api-key` or loaded from `GEOGRAPH_API_KEY`.
 - LCM files are expected under `data/lcm/<year>/...` and tracked in `config/lcm_catalog.yaml`.
-- Downloader uses Geograph `syndicator.php` query semantics; prefer a saved search ID via `downloader.query.i` to enforce retrieval policy constraints.
-- Downloader requires a saved search ID by default (`downloader.query.i` or `--geograph-search-id`).
+- Downloader uses Geograph `syndicator.php` query semantics. Saved search ID is recommended via `downloader.query.i`.
+- Full-resolution download is details-API-first; items without full-res URL are skipped by default.
 
 ## Quickstart
 
@@ -35,7 +41,7 @@ Stage logic is currently stubbed and writes auditable summaries. Full Geograph A
 python -m venv .venv
 . .venv/Scripts/activate
 pip install -e ".[dev]"
-python run_pipeline.py --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY> --geograph-search-id <SEARCH_ID>
+python run_pipeline.py --from-stage download --to-stage download --config config/default.yaml --geograph-api-key <YOUR_KEY>
 ```
 
 Pipeline outputs are written under `outputs/` including:

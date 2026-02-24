@@ -41,15 +41,20 @@ Progress tracker for `geograph-lcm`.
 - [x] Record per-item provenance (endpoint, params, timestamp, checksum, license fields)
 - [x] Add fixture-based tests with mocked API responses
 - [x] Validate deterministic stage outputs for resume
+- [x] Add details-API high-resolution image resolution (strict mode)
+- [x] Add pre-download year filtering (2015-2024 policy gate)
+- [x] Add pre-download license filtering allowlist
+- [x] Add cache-aware skip to prevent redundant image downloads
+- [x] Add interrupted/failed run summaries and progress bar support
 
 ## Milestone 4: Ingest and Curation
 
-- [ ] Implement EXIF + metadata normalization
-- [ ] Implement quality filtering (size/blur/etc.)
-- [ ] Implement license compatibility filtering
-- [ ] Implement deduplication
-- [ ] Produce curated manifest contract for downstream stages
-- [ ] Define and document Geograph saved-search (`query.i`) for policy-constrained retrieval
+- [x] Implement metadata normalization manifest (`ingested_manifest.jsonl`)
+- [x] Implement quality filtering (size/blur/etc.)
+- [x] Implement license compatibility filtering
+- [x] Implement deduplication
+- [x] Produce curated manifest contract for downstream stages
+- [ ] Define and document a production Geograph saved-search (`query.i`) for policy-constrained retrieval
 
 ## Milestone 5: Georeference + LCM Matching
 
