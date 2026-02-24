@@ -5,6 +5,7 @@ Build a labeled dataset of Geograph ground-level images matched to UKCEH Land Co
 ## Tracking
 
 Implementation progress is tracked in `TASKS.md`.
+Operational guidance is in `docs/RUNBOOK.md`.
 
 ## Current status
 
