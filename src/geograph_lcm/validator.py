@@ -39,6 +39,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     random_sample_size = int(validator_cfg.get("random_sample_size", 50))
     per_class_sample_size = int(validator_cfg.get("per_class_sample_size", 20))
     top_classes_for_sampling = int(validator_cfg.get("top_classes_for_sampling", 5))
+    policy_cfg = validator_cfg.get("policy", {})
 
     checks: dict[str, Any] = {}
     metrics: dict[str, Any] = {}
@@ -75,6 +76,19 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         missing_total = sum(missing_values.values())
         if missing_total > 0:
             warnings.append(f"Found missing required values: {missing_total}")
+
+        policy_checks = _policy_checks(rows, fieldnames, policy_cfg)
+        checks["policy"] = policy_checks
+        license_violations = policy_checks["licensing"].get("violating_count", 0)
+        ethics_violations = policy_checks["ethics"].get("violating_count", 0)
+        if license_violations > 0:
+            errors.append(f"Policy violation: {license_violations} rows fail licensing constraints")
+        if ethics_violations > 0:
+            errors.append(f"Policy violation: {ethics_violations} rows fail ethics constraints")
+        if policy_checks["ethics"].get("missing_required_field"):
+            errors.append(
+                f"Policy violation: missing required ethics field '{policy_checks['ethics']['field_name']}'"
+            )
 
         metrics = _distribution_metrics(rows)
 
@@ -204,3 +218,88 @@ def _parse_year(value: str) -> int | None:
     if len(text) >= 4 and text[:4].isdigit():
         return int(text[:4])
     return None
+
+
+def _policy_checks(rows: list[dict[str, str]], fieldnames: list[str], policy_cfg: dict[str, Any]) -> dict[str, Any]:
+    licensing_cfg = policy_cfg.get("licensing", {})
+    ethics_cfg = policy_cfg.get("ethics", {})
+
+    licensing = _licensing_policy_check(rows, licensing_cfg)
+    ethics = _ethics_policy_check(rows, fieldnames, ethics_cfg)
+    return {"licensing": licensing, "ethics": ethics}
+
+
+def _licensing_policy_check(rows: list[dict[str, str]], licensing_cfg: dict[str, Any]) -> dict[str, Any]:
+    enforce = bool(licensing_cfg.get("enforce_allowed_licenses", False))
+    allowed_raw = licensing_cfg.get("allowed_licenses", [])
+    allowed_norm = {_normalize_license(v) for v in allowed_raw if str(v).strip()}
+    if not enforce:
+        return {
+            "enabled": False,
+            "allowed_licenses": sorted(allowed_norm),
+            "violating_count": 0,
+            "violating_examples": [],
+        }
+
+    violating: list[str] = []
+    for row in rows:
+        lic = row.get("license", "")
+        norm = _normalize_license(lic)
+        if not norm or norm not in allowed_norm:
+            violating.append(str(row.get("id", "")).strip())
+    violating = [v for v in violating if v]
+    return {
+        "enabled": True,
+        "allowed_licenses": sorted(allowed_norm),
+        "violating_count": len(violating),
+        "violating_examples": sorted(violating)[:10],
+    }
+
+
+def _ethics_policy_check(
+    rows: list[dict[str, str]],
+    fieldnames: list[str],
+    ethics_cfg: dict[str, Any],
+) -> dict[str, Any]:
+    require_field = bool(ethics_cfg.get("require_review_field", False))
+    field_name = str(ethics_cfg.get("review_field_name", "ethics_review_status")).strip()
+    allowed_values_raw = ethics_cfg.get("allowed_values", [])
+    allowed_values = {str(v).strip().lower() for v in allowed_values_raw if str(v).strip()}
+    field_present = field_name in fieldnames
+
+    if not require_field and not allowed_values:
+        return {
+            "enabled": False,
+            "field_name": field_name,
+            "missing_required_field": False,
+            "violating_count": 0,
+            "violating_examples": [],
+            "allowed_values": sorted(allowed_values),
+        }
+
+    missing_required_field = require_field and not field_present
+    violating: list[str] = []
+    if field_present:
+        for row in rows:
+            item_id = str(row.get("id", "")).strip()
+            value = str(row.get(field_name, "")).strip()
+            value_norm = value.lower()
+            value_missing = not value_norm
+            invalid_by_required = require_field and value_missing
+            invalid_by_allowed = bool(allowed_values) and (value_norm not in allowed_values)
+            if invalid_by_required or invalid_by_allowed:
+                if item_id:
+                    violating.append(item_id)
+
+    return {
+        "enabled": True,
+        "field_name": field_name,
+        "missing_required_field": missing_required_field,
+        "allowed_values": sorted(allowed_values),
+        "violating_count": len(violating),
+        "violating_examples": sorted(violating)[:10],
+    }
+
+
+def _normalize_license(value: str) -> str:
+    return str(value).strip().lower().rstrip("/")

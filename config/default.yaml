@@ -18,7 +18,7 @@ geograph:
 downloader:
   endpoint_path: "/syndicator.php"
   page_size: 100
-  max_items: 1000
+  max_items: 500
   timeout_s: 30.0
   max_retries: 3
   retry_backoff_s: 1.0
@@ -89,3 +89,15 @@ validator:
   random_sample_size: 50
   per_class_sample_size: 20
   top_classes_for_sampling: 5
+  policy:
+    licensing:
+      enforce_allowed_licenses: false
+      allowed_licenses:
+        - "http://creativecommons.org/licenses/by-sa/2.0/"
+        - "https://creativecommons.org/licenses/by-sa/2.0/"
+    ethics:
+      require_review_field: false
+      review_field_name: "ethics_review_status"
+      allowed_values:
+        - "approved"
+        - "not_applicable"

@@ -72,7 +72,7 @@ Progress tracker for `geograph-lcm`.
 
 ## Milestone 7: CI and Hardening
 
-- [ ] Add CI pipeline (lint, type-check, tests)
-- [ ] Ensure CI runs only tiny fixtures (no raw images)
-- [ ] Add runbook for reproducible runs and resume behavior
-- [ ] Add policy checks for licensing/ethics constraints
+- [x] Add CI pipeline (lint, type-check, tests)
+- [x] Ensure CI runs only tiny fixtures (no raw images)
+- [x] Add runbook for reproducible runs and resume behavior
+- [x] Add policy checks for licensing/ethics constraints
