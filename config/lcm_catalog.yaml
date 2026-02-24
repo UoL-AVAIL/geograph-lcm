@@ -6,4 +6,10 @@ lcm_assets:
     nodata: 0
     version: "LCM2015 (25m raster, GB), DOI:10.5285/BB15E200-9349-403C-BDA9-B430093807C7"
     checksum_sha256: "51CED3F2EAE7BC774F130A5EFDF8DA50169D59F381FA9938B1F3840F7C3EAB27"
-
+  - year: 2017
+    path: "data/lcm/2017/data/f6f86b1a-af6d-4ed8-85af-21ee97ec5333/gb2017lcm20m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 20.0
+    nodata: 255
+    version: "LCM2017 (20m raster, GB), dataset UUID:f6f86b1a-af6d-4ed8-85af-21ee97ec5333"
+    checksum_sha256: "DC7834DBFEA02B5CE0DF3A0DC19D7D9741383EB2FA3751A89C89B0A8C636ED26"

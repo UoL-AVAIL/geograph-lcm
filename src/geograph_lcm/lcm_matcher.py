@@ -22,9 +22,9 @@ def run(
     source_manifest = _resolve_source_manifest(input_dir)
     output_manifest = output_dir / "matched_manifest.jsonl"
     taxonomy_path = Path(
-        config.get("lcm", {}).get("taxonomy_path", "config/lcm2015_taxonomy.yaml")
+        config.get("lcm", {}).get("taxonomy_path", "config/lcm_taxonomy.yaml")
     )
-    taxonomy = _load_lcm2015_taxonomy(taxonomy_path)
+    taxonomy = _load_lcm_taxonomy(taxonomy_path)
 
     input_records = 0
     records_written = 0
@@ -272,12 +272,12 @@ def _taxonomy_labels_for_code(code: int, taxonomy: dict[str, dict[int, Any]]) ->
     }
 
 
-def _load_lcm2015_taxonomy(path: Path) -> dict[str, dict[int, Any]]:
+def _load_lcm_taxonomy(path: Path) -> dict[str, dict[int, Any]]:
     with path.open("r", encoding="utf-8") as fh:
         raw = yaml.safe_load(fh) or {}
-    node = raw.get("lcm2015", {})
+    node = raw.get("lcm_taxonomy", {})
     if not isinstance(node, dict):
-        raise ValueError("Invalid taxonomy config: expected top-level lcm2015 mapping")
+        raise ValueError("Invalid taxonomy config: expected top-level lcm_taxonomy mapping")
     l3_codes = _normalize_int_keyed_map(node.get("l3_codes", {}))
     l2_codes = _normalize_int_keyed_map(node.get("l2_aggregate_codes", {}))
     l3_to_l2 = _normalize_int_keyed_map(node.get("l3_to_l2", {}))

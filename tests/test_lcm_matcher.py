@@ -25,7 +25,7 @@ def test_lcm_matcher_preflight_verifies_checksum(tmp_path: Path) -> None:
     )
 
     summary = lcm_matcher.run(
-        config={"lcm": {"taxonomy_path": "config/lcm2015_taxonomy.yaml"}},
+        config={"lcm": {"taxonomy_path": "config/lcm_taxonomy.yaml"}},
         input_dir=None,
         output_dir=tmp_path / "match",
         lcm_assets=[asset],
@@ -49,7 +49,7 @@ def test_lcm_matcher_preflight_raises_on_checksum_mismatch(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="LCM checksum mismatch"):
         lcm_matcher.run(
-            config={"lcm": {"taxonomy_path": "config/lcm2015_taxonomy.yaml"}},
+            config={"lcm": {"taxonomy_path": "config/lcm_taxonomy.yaml"}},
             input_dir=None,
             output_dir=tmp_path / "match",
             lcm_assets=[asset],
@@ -88,7 +88,7 @@ def test_lcm_matcher_writes_matched_manifest(tmp_path: Path, monkeypatch: pytest
     )
 
     summary = lcm_matcher.run(
-        config={"lcm": {"taxonomy_path": "config/lcm2015_taxonomy.yaml"}},
+        config={"lcm": {"taxonomy_path": "config/lcm_taxonomy.yaml"}},
         input_dir=georef_dir,
         output_dir=tmp_path / "match",
         lcm_assets=[asset],
@@ -108,7 +108,7 @@ def test_lcm_matcher_writes_matched_manifest(tmp_path: Path, monkeypatch: pytest
 
 
 def test_taxonomy_loader_reads_int_keys() -> None:
-    taxonomy = lcm_matcher._load_lcm2015_taxonomy(Path("config/lcm2015_taxonomy.yaml"))
+    taxonomy = lcm_matcher._load_lcm_taxonomy(Path("config/lcm_taxonomy.yaml"))
     assert taxonomy["l3_labels"][7] == "Acid Grassland"
     assert taxonomy["l2_labels"][5] == "Semi-natural Grassland"
     assert taxonomy["l3_to_l2"][7] == 5

@@ -1,4 +1,4 @@
-lcm2015:
+lcm_taxonomy:
   source:
     dataset_doc: "data/lcm/2015/supporting-docs/LCM2015_Dataset_Documentation_22May2017.pdf"
     note: "Class legend and aggregate groupings from LCM2015 documentation appendix/table."
@@ -60,4 +60,3 @@ lcm2015:
     19: 9
     20: 10
     21: 10
-

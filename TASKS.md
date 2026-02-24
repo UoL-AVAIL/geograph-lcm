@@ -65,10 +65,10 @@ Progress tracker for `geograph-lcm`.
 
 ## Milestone 6: Dataset Writer + Validation
 
-- [ ] Write dataset files (`dataset/images`, `dataset/labels.csv`, `dataset/README.md`)
-- [ ] Emit `validation/report.yaml`
-- [ ] Add schema checks for required label columns
-- [ ] Add sampling/report metrics for human review
+- [x] Write dataset files (`dataset/images`, `dataset/labels.csv`, `dataset/README.md`)
+- [x] Emit `validation/report.yaml`
+- [x] Add schema checks for required label columns
+- [x] Add sampling/report metrics for human review
 
 ## Milestone 7: CI and Hardening
 

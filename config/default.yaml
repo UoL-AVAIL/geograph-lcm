@@ -18,7 +18,7 @@ geograph:
 downloader:
   endpoint_path: "/syndicator.php"
   page_size: 100
-  max_items: 100
+  max_items: 1000
   timeout_s: 30.0
   max_retries: 3
   retry_backoff_s: 1.0
@@ -40,13 +40,13 @@ downloader:
   query:
     # `i` is a Geograph saved-search ID. Use this to lock policy-constrained retrieval
     # (e.g., UK-wide, capture years 2015-2024, and ground-level preference).
-    #i: null
-    text: "grassland"
+    i: "215369747"
+    #text: "grassland"
   results_key: ""
   retrieval_policy:
     geographic_scope: "uk_wide"
     capture_year_min: 2015
-    capture_year_max: 2015
+    capture_year_max: 2017
     ground_level_only: true
     prefilter_on_download: false
     sampling_strategy: "spatially_balanced"
@@ -74,7 +74,7 @@ georeferencer:
 
 lcm:
   catalog_path: "config/lcm_catalog.yaml"
-  taxonomy_path: "config/lcm2015_taxonomy.yaml"
+  taxonomy_path: "config/lcm_taxonomy.yaml"
   year_selection:
     strategy: "capture_year_then_nearest"
     tie_breaker: "earlier_year"
@@ -82,3 +82,10 @@ lcm:
 
 dataset:
   root: "outputs/dataset"
+
+validator:
+  output_root: "outputs/validation"
+  random_seed: 42
+  random_sample_size: 50
+  per_class_sample_size: 20
+  top_classes_for_sampling: 5
