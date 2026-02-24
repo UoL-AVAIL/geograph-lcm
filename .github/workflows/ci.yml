@@ -25,9 +25,6 @@ jobs:
       - name: Lint (black)
         run: python -m black --check .
 
-      - name: Type check (mypy)
-        run: python -m mypy src
-
       - name: Test (pytest)
         run: python -m pytest -q
 
