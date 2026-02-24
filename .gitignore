@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+
+# Data and run outputs
+data/
+!data/.gitkeep
+outputs/
+!outputs/.gitkeep
+
+# Environment and secrets
+.env
+

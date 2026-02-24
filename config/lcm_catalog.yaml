@@ -1,0 +1,72 @@
+lcm_assets:
+  - year: 2015
+    path: "data/lcm/2015/lcm_2015.tif"
+    crs: "EPSG:27700"
+    resolution_m: 25.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2016
+    path: "data/lcm/2016/lcm_2016.tif"
+    crs: "EPSG:27700"
+    resolution_m: 25.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2017
+    path: "data/lcm/2017/lcm_2017.tif"
+    crs: "EPSG:27700"
+    resolution_m: 20.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2018
+    path: "data/lcm/2018/lcm_2018.tif"
+    crs: "EPSG:27700"
+    resolution_m: 20.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2019
+    path: "data/lcm/2019/lcm_2019.tif"
+    crs: "EPSG:27700"
+    resolution_m: 15.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2020
+    path: "data/lcm/2020/lcm_2020.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2021
+    path: "data/lcm/2021/lcm_2021.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2022
+    path: "data/lcm/2022/lcm_2022.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2023
+    path: "data/lcm/2023/lcm_2023.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+  - year: 2024
+    path: "data/lcm/2024/lcm_2024.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 0
+    version: "TBD"
+    checksum_sha256: "TBD"
+

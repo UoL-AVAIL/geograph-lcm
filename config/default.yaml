@@ -1,0 +1,42 @@
+pipeline:
+  output_root: "outputs"
+  stage_order:
+    - download
+    - ingest
+    - curate
+    - georeference
+    - match_lcm
+    - write_dataset
+    - validate
+
+geograph:
+  api_base_url: "https://api.geograph.org.uk"
+  api_key_env_var: "GEOGRAPH_API_KEY"
+  user_agent: "geograph-lcm/0.1 (+mailto:you@example.com)"
+  max_per_minute: 60
+
+downloader:
+  page_size: 100
+  max_items: 1000
+
+curator:
+  min_width: 800
+  min_height: 600
+  blur_threshold: 100.0
+  allowed_licenses:
+    - "CC-BY-SA"
+    - "CC-BY"
+
+georeferencer:
+  max_georef_radius_m: 50
+
+lcm:
+  catalog_path: "config/lcm_catalog.yaml"
+  year_selection:
+    strategy: "capture_year_then_nearest"
+    tie_breaker: "earlier_year"
+  fallback_when_no_capture_year: "latest_available"
+
+dataset:
+  root: "outputs/dataset"
+
