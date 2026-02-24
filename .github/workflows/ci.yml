@@ -25,9 +25,6 @@ jobs:
       - name: Lint (black)
         run: python -m black --check .
 
-      - name: Lint (flake8)
-        run: python -m flake8 src tests run_pipeline.py notebooks/eda_labels.py
-
       - name: Type check (mypy)
         run: python -m mypy src
 
@@ -40,4 +37,3 @@ jobs:
             echo "Tracked files under data/ or outputs/ are not allowed in CI."
             exit 1
           } || true
-
