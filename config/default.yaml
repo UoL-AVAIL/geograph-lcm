@@ -62,8 +62,8 @@ downloader:
 
 
 curator:
-  min_width: 800
-  min_height: 600
+  min_width: 640
+  min_height: 480
   blur_threshold: 100.0
   allowed_licenses:
     - "CC-BY-SA"

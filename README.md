@@ -11,7 +11,7 @@ Operational guidance is in `docs/RUNBOOK.md`.
 
 This repository includes:
 
-- stage modules and a thin orchestrator (`run_pipeline.py`);
+- stage modules and a thin orchestrator (`geograph-lcm`, with `run_pipeline.py` wrapper);
 - config files for pipeline settings and multi-year LCM catalog (`2015-2024`);
 - LCM year selection policy:
   - exact capture year when available;
@@ -43,7 +43,7 @@ This repository includes:
 python -m venv .venv
 . .venv/Scripts/activate
 pip install -e ".[dev]"
-python run_pipeline.py --from-stage download --to-stage download --config config/default.yaml --geograph-api-key <YOUR_KEY>
+geograph-lcm --from-stage download --to-stage download --config config/default.yaml --geograph-api-key <YOUR_KEY>
 ```
 
 Pipeline outputs are written under `outputs/` including:

@@ -15,13 +15,13 @@ pip install -e ".[dev,geo]"
 Full run through validation:
 
 ```bash
-python run_pipeline.py --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY>
+geograph-lcm --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY>
 ```
 
 Run a single stage:
 
 ```bash
-python run_pipeline.py --from-stage match_lcm --to-stage match_lcm --config config/default.yaml
+geograph-lcm --from-stage match_lcm --to-stage match_lcm --config config/default.yaml
 ```
 
 ## Stage outputs
@@ -38,18 +38,10 @@ python run_pipeline.py --from-stage match_lcm --to-stage match_lcm --config conf
 
 Each stage writes `_SUCCESS.json`. If present, the orchestrator skips that stage.
 
-To rerun a stage, remove its output folder:
+To rerun completed stages, use `--force`:
 
 ```bash
-rm -rf outputs/match_lcm
-python run_pipeline.py --from-stage match_lcm --to-stage match_lcm --config config/default.yaml
-```
-
-PowerShell equivalent:
-
-```powershell
-Remove-Item -Recurse -Force outputs/match_lcm
-python run_pipeline.py --from-stage match_lcm --to-stage match_lcm --config config/default.yaml
+geograph-lcm --from-stage match_lcm --to-stage match_lcm --config config/default.yaml --force
 ```
 
 ## Common failures and fixes
@@ -75,4 +67,3 @@ No dataset rows written:
 - Keep `data/` and `outputs/` untracked in git.
 - Do not commit raw imagery or large raster files.
 - Keep API keys out of config and source control.
-

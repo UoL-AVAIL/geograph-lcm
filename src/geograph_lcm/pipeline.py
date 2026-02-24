@@ -43,6 +43,7 @@ def run_pipeline(
     from_stage: str,
     to_stage: str,
     command: str,
+    force: bool = False,
 ) -> dict[str, Any]:
     output_root = Path(config.get("pipeline", {}).get("output_root", "outputs"))
     ensure_dir(output_root)
@@ -57,9 +58,9 @@ def run_pipeline(
     for idx, stage in enumerate(selected_stages):
         stage_dir = output_root / stage.name
         ensure_dir(stage_dir)
-        prev_stage_dir = output_root / selected_stages[idx - 1].name if idx > 0 else None
+        prev_stage_dir = _previous_stage_output_dir(stage_name=stage.name, output_root=output_root)
 
-        if stage_is_complete(stage_dir):
+        if stage_is_complete(stage_dir) and not force:
             print(f"[stage:{stage.name}] skipped (already complete)")
             skipped = {
                 "stage": stage.name,
@@ -128,3 +129,13 @@ def _current_git_commit() -> str | None:
         return out
     except Exception:
         return None
+
+
+def _previous_stage_output_dir(stage_name: str, output_root: Path) -> Path | None:
+    names = [s.name for s in STAGES]
+    if stage_name not in names:
+        return None
+    idx = names.index(stage_name)
+    if idx == 0:
+        return None
+    return output_root / names[idx - 1]
