@@ -32,6 +32,7 @@ This repository includes:
 - Geograph ingestion must use the official Geograph Image APIs only.
 - API credentials can be passed with `--geograph-api-key` or loaded from `GEOGRAPH_API_KEY`.
 - LCM files are expected under `data/lcm/<year>/...` and tracked in `config/lcm_catalog.yaml`.
+- LCM2015 taxonomy mappings are versioned in `config/lcm2015_taxonomy.yaml`.
 - Downloader uses Geograph `syndicator.php` query semantics. Saved search ID is recommended via `downloader.query.i`.
 - Full-resolution download is details-API-first; items without full-res URL are skipped by default.
 

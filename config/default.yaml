@@ -46,7 +46,7 @@ downloader:
   retrieval_policy:
     geographic_scope: "uk_wide"
     capture_year_min: 2015
-    capture_year_max: 2024
+    capture_year_max: 2015
     ground_level_only: true
     prefilter_on_download: false
     sampling_strategy: "spatially_balanced"
@@ -74,6 +74,7 @@ georeferencer:
 
 lcm:
   catalog_path: "config/lcm_catalog.yaml"
+  taxonomy_path: "config/lcm2015_taxonomy.yaml"
   year_selection:
     strategy: "capture_year_then_nearest"
     tie_breaker: "earlier_year"

@@ -58,10 +58,10 @@ Progress tracker for `geograph-lcm`.
 
 ## Milestone 5: Georeference + LCM Matching
 
-- [ ] Implement georeference confidence and provenance fields
-- [ ] Implement LCM spatial matching with per-year raster metadata
-- [ ] Record label provenance (`selected_lcm_year`, `lcm_resolution_m`, match method)
-- [ ] Add tests with tiny geospatial fixtures
+- [x] Implement georeference confidence and provenance fields
+- [x] Implement LCM spatial matching with per-year raster metadata
+- [x] Record label provenance (`selected_lcm_year`, `lcm_resolution_m`, match method)
+- [x] Add tests with tiny geospatial fixtures
 
 ## Milestone 6: Dataset Writer + Validation
 
