@@ -16,8 +16,50 @@ geograph:
   max_per_minute: 60
 
 downloader:
+  endpoint_path: "/syndicator.php"
   page_size: 100
-  max_items: 1000
+  max_items: 100
+  timeout_s: 30.0
+  max_retries: 3
+  retry_backoff_s: 1.0
+  auth_key_param: "key"
+  page_param: "page"
+  per_page_param: "perpage"
+  format_param: "format"
+  format_value: "JSON"
+  show_progress: true
+  prefer_details_api_image_url: true
+  details_api_fallback_to_feed_url: false
+  details_api_path_template: "/api/photo/{photo_id}/{api_key}"
+  skip_if_exists: true
+  force_redownload: false
+  allowed_licenses:
+    - "http://creativecommons.org/licenses/by-sa/2.0/"
+    - "https://creativecommons.org/licenses/by-sa/2.0/"
+  require_saved_search_id: false
+  query:
+    # `i` is a Geograph saved-search ID. Use this to lock policy-constrained retrieval
+    # (e.g., UK-wide, capture years 2015-2024, and ground-level preference).
+    #i: null
+    text: "grassland"
+  results_key: ""
+  retrieval_policy:
+    geographic_scope: "uk_wide"
+    capture_year_min: 2015
+    capture_year_max: 2024
+    ground_level_only: true
+    prefilter_on_download: false
+    sampling_strategy: "spatially_balanced"
+    class_balancing_strategy: "post_lcm_match"
+    target_batch_size: 10000
+  field_mapping:
+    id_field: "guid"
+    image_url_field: "thumb"
+    license_field: "licence"
+    timestamp_field: "imageTaken"
+    lat_field: "lat"
+    lon_field: "long"
+
 
 curator:
   min_width: 800
@@ -39,4 +81,3 @@ lcm:
 
 dataset:
   root: "outputs/dataset"
-

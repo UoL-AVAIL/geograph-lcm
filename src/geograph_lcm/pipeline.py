@@ -47,8 +47,10 @@ def run_pipeline(
     output_root = Path(config.get("pipeline", {}).get("output_root", "outputs"))
     ensure_dir(output_root)
     logs_path = output_root / "pipeline_events.jsonl"
+    print(f"[pipeline] output_root={output_root}")
 
     selected_stages = _slice_stages(from_stage=from_stage, to_stage=to_stage)
+    print("[pipeline] stages=" + ", ".join(stage.name for stage in selected_stages))
     stage_results: list[dict[str, Any]] = []
     started_at = utc_now_iso()
 
@@ -58,6 +60,7 @@ def run_pipeline(
         prev_stage_dir = output_root / selected_stages[idx - 1].name if idx > 0 else None
 
         if stage_is_complete(stage_dir):
+            print(f"[stage:{stage.name}] skipped (already complete)")
             skipped = {
                 "stage": stage.name,
                 "status": "skipped_completed",
@@ -70,6 +73,7 @@ def run_pipeline(
 
         start_evt = {"stage": stage.name, "status": "start", "timestamp": utc_now_iso()}
         write_jsonl_event(logs_path, start_evt)
+        print(f"[stage:{stage.name}] start")
 
         if stage.name == "match_lcm":
             result = stage.runner(config, prev_stage_dir, stage_dir, lcm_assets)
@@ -84,6 +88,7 @@ def run_pipeline(
         }
         write_jsonl_event(logs_path, done_evt)
         stage_results.append({"stage": stage.name, "status": "completed", "result": result})
+        print(f"[stage:{stage.name}] completed")
 
     manifest = {
         "started_at": started_at,
@@ -99,6 +104,7 @@ def run_pipeline(
         "stages": stage_results,
     }
     write_json(output_root / "pipeline_run.json", manifest)
+    print(f"[pipeline] wrote manifest: {output_root / 'pipeline_run.json'}")
     return manifest
 
 
@@ -122,4 +128,3 @@ def _current_git_commit() -> str | None:
         return out
     except Exception:
         return None
-

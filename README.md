@@ -24,8 +24,10 @@ Stage logic is currently stubbed and writes auditable summaries. Full Geograph A
 ## Constraints
 
 - Geograph ingestion must use the official Geograph Image APIs only.
-- API credentials are loaded from environment variable `GEOGRAPH_API_KEY` by default.
+- API credentials can be passed with `--geograph-api-key` or loaded from `GEOGRAPH_API_KEY`.
 - LCM files are expected under `data/lcm/<year>/...` and tracked in `config/lcm_catalog.yaml`.
+- Downloader uses Geograph `syndicator.php` query semantics; prefer a saved search ID via `downloader.query.i` to enforce retrieval policy constraints.
+- Downloader requires a saved search ID by default (`downloader.query.i` or `--geograph-search-id`).
 
 ## Quickstart
 
@@ -33,7 +35,7 @@ Stage logic is currently stubbed and writes auditable summaries. Full Geograph A
 python -m venv .venv
 . .venv/Scripts/activate
 pip install -e ".[dev]"
-python run_pipeline.py --from-stage download --to-stage validate --config config/default.yaml
+python run_pipeline.py --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY> --geograph-search-id <SEARCH_ID>
 ```
 
 Pipeline outputs are written under `outputs/` including:

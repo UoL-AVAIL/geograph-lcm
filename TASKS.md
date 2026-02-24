@@ -29,18 +29,18 @@ Progress tracker for `geograph-lcm`.
   - [x] no capture year -> latest available year
 - [x] Add unit tests for selection policy
 
-## Milestone 3: Downloader v1 (Next Slice)
+## Milestone 3: Downloader v1
 
-- [ ] Implement Geograph API client (official API only)
-- [ ] Load API key from env (`GEOGRAPH_API_KEY`)
-- [ ] Add pagination, rate limiting, and retry logic
-- [ ] Write raw outputs:
-  - [ ] `outputs/download/raw/metadata.jsonl`
-  - [ ] `outputs/download/raw/images/<id>.jpg`
-  - [ ] `outputs/download/download_summary.json`
-- [ ] Record per-item provenance (endpoint, params, timestamp, checksum, license fields)
-- [ ] Add fixture-based tests with mocked API responses
-- [ ] Validate deterministic stage outputs for resume
+- [x] Implement Geograph API client (official API only)
+- [x] Load API key from env (`GEOGRAPH_API_KEY`)
+- [x] Add pagination, rate limiting, and retry logic
+- [x] Write raw outputs:
+  - [x] `outputs/download/raw/metadata.jsonl`
+  - [x] `outputs/download/raw/images/<id>.jpg`
+  - [x] `outputs/download/download_summary.json`
+- [x] Record per-item provenance (endpoint, params, timestamp, checksum, license fields)
+- [x] Add fixture-based tests with mocked API responses
+- [x] Validate deterministic stage outputs for resume
 
 ## Milestone 4: Ingest and Curation
 
@@ -49,6 +49,7 @@ Progress tracker for `geograph-lcm`.
 - [ ] Implement license compatibility filtering
 - [ ] Implement deduplication
 - [ ] Produce curated manifest contract for downstream stages
+- [ ] Define and document Geograph saved-search (`query.i`) for policy-constrained retrieval
 
 ## Milestone 5: Georeference + LCM Matching
 
@@ -70,4 +71,3 @@ Progress tracker for `geograph-lcm`.
 - [ ] Ensure CI runs only tiny fixtures (no raw images)
 - [ ] Add runbook for reproducible runs and resume behavior
 - [ ] Add policy checks for licensing/ethics constraints
-

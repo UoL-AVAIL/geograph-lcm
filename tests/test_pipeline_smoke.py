@@ -13,13 +13,12 @@ def test_pipeline_scaffold_runs_download_to_match(tmp_path: Path) -> None:
     manifest = run_pipeline(
         config=config,
         lcm_assets=lcm_assets,
-        from_stage="download",
+        from_stage="ingest",
         to_stage="match_lcm",
         command="pytest-smoke",
     )
 
-    assert manifest["from_stage"] == "download"
+    assert manifest["from_stage"] == "ingest"
     assert manifest["to_stage"] == "match_lcm"
     assert (tmp_path / "outputs" / "pipeline_run.json").exists()
     assert (tmp_path / "outputs" / "match_lcm" / "_SUCCESS.json").exists()
-

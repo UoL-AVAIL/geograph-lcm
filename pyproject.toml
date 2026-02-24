@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
   "pyyaml>=6.0",
   "requests>=2.31.0",
+  "tqdm>=4.66.0",
 ]
 
 [project.optional-dependencies]
@@ -52,4 +53,3 @@ no_implicit_optional = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
