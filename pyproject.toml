@@ -27,6 +27,9 @@ geo = [
   "shapely>=2.0.0",
   "pyproj>=3.5.0",
 ]
+viz = [
+  "bokeh>=3.4.0",
+]
 dev = [
   "black==24.4.2",
   "flake8>=7.0.0",

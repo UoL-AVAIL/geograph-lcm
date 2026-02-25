@@ -10,6 +10,12 @@ python -m venv .venv
 pip install -e ".[dev,geo]"
 ```
 
+For the interactive map explorer, install viz extras:
+
+```bash
+pip install -e ".[dev,viz]"
+```
+
 ## Core commands
 
 Full run through validation:
@@ -75,3 +81,11 @@ No dataset rows written:
 - Keep `data/` and `outputs/` untracked in git.
 - Do not commit raw imagery or large raster files.
 - Keep API keys out of config and source control.
+
+## Interactive map inspection
+
+Use the Bokeh app to inspect all points on a UK map, colored by `lcm_l3`, with click-to-preview image:
+
+```bash
+bokeh serve apps/lcm_map_bokeh.py --show --args --labels outputs/dataset/labels.csv
+```

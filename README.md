@@ -66,3 +66,12 @@ Generate baseline exploratory charts from `labels.csv`:
 ```bash
 python notebooks/eda_labels.py --labels outputs/dataset/labels.csv --out-dir outputs/validation/eda
 ```
+
+## Interactive Map Explorer
+
+Run an interactive UK map viewer with LCM L3 coloring and click-to-preview images:
+
+```bash
+pip install -e ".[dev,viz]"
+bokeh serve apps/lcm_map_bokeh.py --show --args --labels outputs/dataset/labels.csv
+```
