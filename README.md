@@ -24,6 +24,7 @@ This repository includes:
   - optional CLI API key (`--geograph-api-key`);
   - optional saved search ID (`--geograph-search-id` or `downloader.query.i`);
   - strict full-res image resolution via details API (no thumb fallback by default);
+  - optional pre-download dimension filter via details API (`pre_download_min_width/height`);
   - capture-year and license filtering before image download;
   - cache-aware skip of already downloaded items;
   - interrupted/failed run summaries and `tqdm` progress bar support.
@@ -46,7 +47,13 @@ pip install -e ".[dev]"
 geograph-lcm --from-stage download --to-stage download --config config/default.yaml --geograph-api-key <YOUR_KEY>
 ```
 
-Pipeline outputs are written under `outputs/` including:
+Set a custom output root:
+
+```bash
+geograph-lcm --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY> --output-dir /path/to/my-run
+```
+
+Pipeline outputs are written under `outputs/` by default (or the `--output-dir` path) including:
 
 - `outputs/pipeline_run.json`
 - `outputs/pipeline_events.jsonl`

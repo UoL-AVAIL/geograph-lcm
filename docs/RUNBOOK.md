@@ -18,6 +18,12 @@ Full run through validation:
 geograph-lcm --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY>
 ```
 
+Full run with a custom output directory:
+
+```bash
+geograph-lcm --from-stage download --to-stage validate --config config/default.yaml --geograph-api-key <YOUR_KEY> --output-dir /path/to/my-run
+```
+
 Run a single stage:
 
 ```bash
@@ -25,6 +31,8 @@ geograph-lcm --from-stage match_lcm --to-stage match_lcm --config config/default
 ```
 
 ## Stage outputs
+
+Default root is `outputs/`. If `--output-dir` is set, replace `outputs/` below with that path.
 
 - `outputs/download/raw/metadata.jsonl`
 - `outputs/ingest/ingested_manifest.jsonl`

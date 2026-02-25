@@ -76,3 +76,4 @@ Progress tracker for `geograph-lcm`.
 - [x] Ensure CI runs only tiny fixtures (no raw images)
 - [x] Add runbook for reproducible runs and resume behavior
 - [x] Add policy checks for licensing/ethics constraints
+- [x] Add CLI `--output-dir` override for pipeline outputs
