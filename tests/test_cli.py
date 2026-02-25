@@ -12,7 +12,15 @@ from geograph_lcm import cli
 def test_parse_args_accepts_output_dir(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "sys.argv",
-        ["geograph-lcm", "--from-stage", "download", "--to-stage", "download", "--output-dir", "out"],
+        [
+            "geograph-lcm",
+            "--from-stage",
+            "download",
+            "--to-stage",
+            "download",
+            "--output-dir",
+            "out",
+        ],
     )
     args = cli.parse_args()
     assert isinstance(args, argparse.Namespace)
