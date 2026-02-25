@@ -13,3 +13,52 @@ lcm_assets:
     nodata: 255
     version: "LCM2017 (20m raster, GB), dataset UUID:f6f86b1a-af6d-4ed8-85af-21ee97ec5333"
     checksum_sha256: "DC7834DBFEA02B5CE0DF3A0DC19D7D9741383EB2FA3751A89C89B0A8C636ED26"
+  - year: 2018
+    path: "data/lcm/2018/data/b3dfc4c7-c9bd-4a02-bed8-46b2a41be04a/gb2018lcm20m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 20.0
+    nodata: 255
+    version: "LCM2018 (20m raster, GB), dataset UUID:b3dfc4c7-c9bd-4a02-bed8-46b2a41be04a"
+    checksum_sha256: "AC72B024033F9AA4D97FF3C7EC10A772EA6C796E153BCDEC013B7EBA73DDA96D"
+  - year: 2019
+    path: "data/lcm/2019/data/643eb5a9-9707-4fbb-ae76-e8e53271d1a0/gb2019lcm20m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 20.0
+    nodata: 255
+    version: "LCM2019 (20m raster, GB), dataset UUID:643eb5a9-9707-4fbb-ae76-e8e53271d1a0"
+    checksum_sha256: "477F5591AA4B4B66C89CD066416C2D0B88EFF550ACEA45DEA3DF280A887138D8"
+  - year: 2020
+    path: "data/lcm/2020/data/35c7d0e5-1121-4381-9940-75f7673c98f7/gb2020lcm10m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 255
+    version: "LCM2020 (10m raster, GB), dataset UUID:35c7d0e5-1121-4381-9940-75f7673c98f7"
+    checksum_sha256: "622A088ABD1345A1B8227C112F0C99AB61B4164FACB2B72115D15F677EE5011B"
+  - year: 2021
+    path: "data/lcm/2021/data/a22baa7c-5809-4a02-87e0-3cf87d4e223a/gblcm10m2021.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: 255
+    version: "LCM2021 (10m raster, GB), dataset UUID:a22baa7c-5809-4a02-87e0-3cf87d4e223a"
+    checksum_sha256: "7A1A0B79BE92A78335B4CA937DA463ED21D91B787B67159E76CCED7526FEE419"
+  - year: 2022
+    path: "data/lcm/2022/data/1e09f53f-55de-4960-b2a1-da2a42029e7e/gblcm2022_10m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: null
+    version: "LCM2022 (10m raster, GB), dataset UUID:1e09f53f-55de-4960-b2a1-da2a42029e7e"
+    checksum_sha256: "42098430FF0871E3D3985D7C4DE9A13BC84315F06446E830BC047B2D456819A9"
+  - year: 2023
+    path: "data/lcm/2023/data/7727ce7d-531e-4d77-b756-5cc59ff016bd/gblcm2023_10m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: null
+    version: "LCM2023 (10m raster, GB), dataset UUID:7727ce7d-531e-4d77-b756-5cc59ff016bd"
+    checksum_sha256: "7513620F656C0F5C229838B05378880F494289E15D6CD60394315471CFF6140B"
+  - year: 2024
+    path: "data/lcm/2024/data/4dd9df19-8df5-41a0-9829-8f6114e28db1/gblcm2024_10m.tif"
+    crs: "EPSG:27700"
+    resolution_m: 10.0
+    nodata: null
+    version: "LCM2024 (10m raster, GB), dataset UUID:4dd9df19-8df5-41a0-9829-8f6114e28db1"
+    checksum_sha256: "A821B46AE5DFB49B2F5313BD23DFB75BA82087944A282D4C3908919432E9CC73"

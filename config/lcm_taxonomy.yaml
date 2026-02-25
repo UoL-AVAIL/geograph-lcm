@@ -1,9 +1,17 @@
 lcm_taxonomy:
   source:
     dataset_doc: "data/lcm/2015/supporting-docs/LCM2015_Dataset_Documentation_22May2017.pdf"
-    note: "Class legend and aggregate groupings from LCM2015 documentation appendix/table."
+    additional_docs:
+      - "data/lcm/2017/supporting-docs/lcm2017-2019product_documentation_v1_5_1.pdf"
+      - "data/lcm/2021/supporting-docs/LCM2021ProductDocumentation.pdf"
+      - "data/lcm/2022/supporting-docs/LCM2022ProductDocumentation.pdf"
+      - "data/lcm/2023/supporting-docs/LCM2023ProductDocumentation.pdf"
+      - "data/lcm/2024/supporting-docs/lcm2024productdocumentation.docx"
+    applies_to_years: [2015, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+    note: "Shared 21-class legend (L3 codes 1-21) and L2 aggregation mapping used across listed LCM years."
 
   l3_codes:
+    0: "No data / Unclassified"
     1: "Broadleaved Woodland"
     2: "Coniferous Woodland"
     3: "Arable and Horticulture"
@@ -27,6 +35,7 @@ lcm_taxonomy:
     21: "Suburban"
 
   l2_aggregate_codes:
+    0: "No data / Unclassified"
     1: "Broadleaf Woodland"
     2: "Coniferous Woodland"
     3: "Arable and Horticulture"
@@ -39,6 +48,7 @@ lcm_taxonomy:
     10: "Built-up Areas and Gardens"
 
   l3_to_l2:
+    0: 0
     1: 1
     2: 2
     3: 3
