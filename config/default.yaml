@@ -40,7 +40,8 @@ downloader:
     - "https://creativecommons.org/licenses/by-sa/2.0/"
   require_saved_search_id: false
   query:
-    # `i` is a Geograph saved-search ID. Use this to lock policy-constrained retrieval
+    # `i` is a Geograph saved-search ID (or a list/comma-separated list of IDs).
+    # Use this to lock policy-constrained retrieval.
     # (e.g., UK-wide, capture years 2015-2024, and ground-level preference).
     i: "215369747"
     #text: "grassland"

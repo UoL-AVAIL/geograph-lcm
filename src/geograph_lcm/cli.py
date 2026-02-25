@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--geograph-search-id",
         default=None,
-        help="Geograph saved search ID injected as downloader.query.i.",
+        help="Geograph saved search ID(s) injected as downloader.query.i (comma-separated supported).",
     )
     parser.add_argument(
         "--force",

@@ -22,7 +22,7 @@ This repository includes:
 - a working Geograph downloader with:
   - `syndicator.php` paging + retry/rate limiting;
   - optional CLI API key (`--geograph-api-key`);
-  - optional saved search ID (`--geograph-search-id` or `downloader.query.i`);
+  - optional saved search ID(s) (`--geograph-search-id` or `downloader.query.i`);
   - strict full-res image resolution via details API (no thumb fallback by default);
   - optional pre-download dimension filter via details API (`pre_download_min_width/height`);
   - capture-year and license filtering before image download;
@@ -35,7 +35,7 @@ This repository includes:
 - API credentials can be passed with `--geograph-api-key` or loaded from `GEOGRAPH_API_KEY`.
 - LCM files are expected under `data/lcm/<year>/...` and tracked in `config/lcm_catalog.yaml`.
 - LCM taxonomy mappings are versioned in `config/lcm_taxonomy.yaml`.
-- Downloader uses Geograph `syndicator.php` query semantics. Saved search ID is recommended via `downloader.query.i`.
+- Downloader uses Geograph `syndicator.php` query semantics. Saved search ID(s) are recommended via `downloader.query.i` (single ID, comma-separated IDs, or list).
 - Full-resolution download is details-API-first; items without full-res URL are skipped by default.
 
 ## Quickstart
