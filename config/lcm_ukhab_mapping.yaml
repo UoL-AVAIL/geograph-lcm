@@ -1,0 +1,169 @@
+version: 1.0
+description: >
+  Crosswalk from UKCEH Land Cover Map (LCM 2019/2020 broad habitat classes)
+  to UKHab v2.0 Primary Habitat Level 3 categories.
+  Mapping is conceptual and not officially endorsed.
+  Level 4/5 UKHab codes are intentionally not assigned.
+
+mappings:
+
+  - lcm_name: Broadleaved woodland
+    ukhab_code: w1
+    ukhab_name: Broadleaved and mixed woodland
+    confidence: strong
+    notes: >
+      Direct structural correspondence. LCM does not distinguish ancient,
+      semi-natural, or plantation broadleaved woodland at UKHab Level 4.
+
+  - lcm_name: Coniferous woodland
+    ukhab_code: w2
+    ukhab_name: Coniferous woodland
+    confidence: strong
+    notes: >
+      Direct structural correspondence. LCM does not distinguish native pinewood
+      from plantation at UKHab Level 4.
+
+  - lcm_name: Mixed woodland
+    ukhab_code: w1
+    ukhab_name: Broadleaved and mixed woodland
+    confidence: moderate
+    notes: >
+      LCM mixed woodland cannot reliably partition canopy dominance thresholds
+      required to assign w1h Level 4 categories.
+
+  - lcm_name: Improved grassland
+    ukhab_code: g4
+    ukhab_name: Modified grassland
+    confidence: strong
+    notes: >
+      Strong conceptual alignment. Both represent agriculturally improved,
+      species-poor productive grassland.
+
+  - lcm_name: Neutral grassland
+    ukhab_code: g3
+    ukhab_name: Neutral grassland
+    confidence: moderate
+    notes: >
+      UKHab Level 4 neutral grassland types require species thresholds.
+      LCM cannot distinguish semi-improved from species-rich neutral grassland.
+
+  - lcm_name: Acid grassland
+    ukhab_code: g1
+    ukhab_name: Acid grassland
+    confidence: moderate
+    notes: >
+      LCM cannot reliably separate lowland (g1a) from upland (g1b)
+      acid grassland.
+
+  - lcm_name: Calcareous grassland
+    ukhab_code: g2
+    ukhab_name: Calcareous grassland
+    confidence: moderate_strong
+    notes: >
+      Good alignment at Level 3. LCM cannot assign upland vs lowland
+      or Annex I subtypes.
+
+  - lcm_name: Heather
+    ukhab_code: h1
+    ukhab_name: Dwarf shrub heath
+    confidence: strong
+    notes: >
+      Structural match where dwarf shrub cover exceeds 25%.
+      Wet vs dry heath not distinguishable.
+
+  - lcm_name: Heather grassland
+    ukhab_code: h1
+    ukhab_name: Dwarf shrub heath
+    confidence: approximate
+    notes: >
+      Mixed grass-heath mosaics may fall below UKHab 25% dwarf shrub
+      threshold. Could alternatively be mapped to g1 in marginal cases.
+
+  - lcm_name: Dense scrub
+    ukhab_code: h3
+    ukhab_name: Dense scrub
+    confidence: strong
+    notes: >
+      Structural match for shrub-dominated vegetation >75% cover.
+
+  - lcm_name: Bog
+    ukhab_code: f1
+    ukhab_name: Bog
+    confidence: strong
+    notes: >
+      Good conceptual alignment. LCM does not distinguish blanket vs
+      raised bog (UKHab f1a vs f1b).
+
+  - lcm_name: Fen, marsh and swamp
+    ukhab_code: f2
+    ukhab_name: Fen marsh and swamp
+    confidence: moderate
+    notes: >
+      UKHab contains finer splits (f2a–f2f). LCM aggregates minerotrophic
+      wetland types.
+
+  - lcm_name: Freshwater
+    ukhab_code: r1
+    ukhab_name: Standing open water and canals
+    confidence: approximate
+    notes: >
+      LCM may not distinguish standing from flowing water.
+      Rivers may require reassignment to r2 where ancillary data exist.
+
+  - lcm_name: Rivers
+    ukhab_code: r2
+    ukhab_name: Rivers and streams
+    confidence: moderate
+    notes: >
+      Applied where LCM specifically identifies linear river features.
+
+  - lcm_name: Saltmarsh
+    ukhab_code: t2
+    ukhab_name: Littoral sediment
+    confidence: strong
+    notes: >
+      Corresponds to coastal saltmarsh systems (t2a at Level 4).
+
+  - lcm_name: Littoral rock
+    ukhab_code: t1
+    ukhab_name: Littoral rock
+    confidence: strong
+    notes: >
+      Direct coastal rocky shore match.
+
+  - lcm_name: Littoral sediment
+    ukhab_code: t2
+    ukhab_name: Littoral sediment
+    confidence: strong
+    notes: >
+      Includes mudflats, sandflats, shingle and beach systems.
+
+  - lcm_name: Inland rock
+    ukhab_code: s1
+    ukhab_name: Inland rock
+    confidence: strong
+    notes: >
+      Corresponds to sparsely vegetated inland rock outcrops and scree.
+
+  - lcm_name: Sand dunes
+    ukhab_code: s3
+    ukhab_name: Supralittoral sediment
+    confidence: moderate
+    notes: >
+      Level 4 dune systems not distinguishable from LCM alone.
+
+  - lcm_name: Urban
+    ukhab_code: u1
+    ukhab_name: Built-up areas and gardens
+    confidence: moderate
+    notes: >
+      LCM urban classes aggregate multiple UKHab Level 4 built surface
+      categories.
+
+  - lcm_name: Suburban
+    ukhab_code: u1
+    ukhab_name: Built-up areas and gardens
+    confidence: approximate
+    notes: >
+      Landscape-scale classification; does not map cleanly to UKHab
+      structural definitions.
