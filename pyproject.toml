@@ -43,6 +43,12 @@ where = ["src"]
 [tool.black]
 line-length = 100
 target-version = ["py310"]
+extend-exclude = '''
+(
+  ^data/
+  |^outputs/
+)
+'''
 
 [tool.flake8]
 max-line-length = 100
