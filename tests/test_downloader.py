@@ -114,7 +114,7 @@ def test_downloader_writes_metadata_and_images(
         "geograph": {
             "api_base_url": "https://api.geograph.org.uk",
             "api_key_env_var": "GEOGRAPH_API_KEY",
-            "user_agent": "test-agent",
+            "version": "test-agent",
             "max_per_minute": 0,
         },
         "downloader": {
@@ -423,6 +423,141 @@ def test_skips_item_when_full_res_missing_and_fallback_disabled(
     assert summary["items_written"] == 0
     assert summary["skipped_missing_full_res"] == 1
     assert not (tmp_path / "download" / "raw" / "images" / "8131806.jpg").exists()
+
+
+def test_skips_item_below_pre_download_dimensions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GEOGRAPH_API_KEY", "test-key")
+    scripted = [
+        FakeResponse(
+            headers={"content-type": "application/json"},
+            json_data={
+                "items": [
+                    {
+                        "guid": "8131806",
+                        "thumb": "https://s2.geograph.org.uk/geophotos/08/13/18/8131806_thumb.jpg",
+                        "licence": "http://creativecommons.org/licenses/by-sa/2.0/",
+                        "imageTaken": "2025-08-22",
+                        "lat": "57.460776",
+                        "long": "-2.486179",
+                    }
+                ]
+            },
+        ),
+        FakeResponse(
+            headers={"content-type": "application/xml"},
+            content=(
+                b'<response><img src="https://s0.geograph.org.uk/geophotos/08/13/18/8131806_full.jpg" width="640" height="480" /></response>'
+            ),
+        ),
+        FakeResponse(headers={"content-type": "application/json"}, json_data={"items": []}),
+    ]
+    fake_session = FakeSession(scripted)
+    monkeypatch.setattr(downloader.requests, "Session", lambda: fake_session)
+
+    summary = downloader.run(
+        config={
+            "geograph": {"api_base_url": "https://api.geograph.org.uk", "max_per_minute": 0},
+            "downloader": {
+                "query": {"i": "12345"},
+                "results_key": "items",
+                "require_saved_search_id": True,
+                "prefer_details_api_image_url": True,
+                "details_api_fallback_to_feed_url": False,
+                "pre_download_min_width": 800,
+                "pre_download_min_height": 600,
+                "details_api_path_template": "/api/photo/{photo_id}/{api_key}",
+                "field_mapping": {
+                    "id_field": "guid",
+                    "image_url_field": "thumb",
+                    "license_field": "licence",
+                    "timestamp_field": "imageTaken",
+                    "lat_field": "lat",
+                    "lon_field": "long",
+                },
+            },
+        },
+        input_dir=None,
+        output_dir=tmp_path / "download",
+    )
+
+    assert summary["items_written"] == 0
+    assert summary["skipped_small_dimensions"] == 1
+    assert not (tmp_path / "download" / "raw" / "images").exists() or not list(
+        (tmp_path / "download" / "raw" / "images").glob("*")
+    )
+
+
+def test_records_details_dimensions_when_downloaded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GEOGRAPH_API_KEY", "test-key")
+    scripted = [
+        FakeResponse(
+            headers={"content-type": "application/json"},
+            json_data={
+                "items": [
+                    {
+                        "guid": "8131806",
+                        "thumb": "https://s2.geograph.org.uk/geophotos/08/13/18/8131806_thumb.jpg",
+                        "licence": "http://creativecommons.org/licenses/by-sa/2.0/",
+                        "imageTaken": "2025-08-22",
+                        "lat": "57.460776",
+                        "long": "-2.486179",
+                    }
+                ]
+            },
+        ),
+        FakeResponse(
+            headers={"content-type": "application/xml"},
+            content=(
+                b'<response><img src="https://s0.geograph.org.uk/geophotos/08/13/18/8131806_full.jpg" width="1024" height="768" /></response>'
+            ),
+        ),
+        FakeResponse(content=b"full-image-bytes"),
+        FakeResponse(headers={"content-type": "application/json"}, json_data={"items": []}),
+    ]
+    fake_session = FakeSession(scripted)
+    monkeypatch.setattr(downloader.requests, "Session", lambda: fake_session)
+
+    summary = downloader.run(
+        config={
+            "geograph": {"api_base_url": "https://api.geograph.org.uk", "max_per_minute": 0},
+            "downloader": {
+                "query": {"i": "12345"},
+                "results_key": "items",
+                "require_saved_search_id": True,
+                "prefer_details_api_image_url": True,
+                "details_api_fallback_to_feed_url": False,
+                "pre_download_min_width": 800,
+                "pre_download_min_height": 600,
+                "details_api_path_template": "/api/photo/{photo_id}/{api_key}",
+                "field_mapping": {
+                    "id_field": "guid",
+                    "image_url_field": "thumb",
+                    "license_field": "licence",
+                    "timestamp_field": "imageTaken",
+                    "lat_field": "lat",
+                    "lon_field": "long",
+                },
+            },
+        },
+        input_dir=None,
+        output_dir=tmp_path / "download",
+    )
+
+    assert summary["items_written"] == 1
+    assert summary["skipped_small_dimensions"] == 0
+    metadata_lines = (
+        (tmp_path / "download" / "raw" / "metadata.jsonl")
+        .read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
+    first = json.loads(metadata_lines[0])
+    assert first["details_image_width"] == 1024
+    assert first["details_image_height"] == 768
 
 
 def test_skips_item_with_disallowed_license(

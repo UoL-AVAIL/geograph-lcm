@@ -32,6 +32,7 @@ def test_pipeline_scaffold_runs_download_to_match(tmp_path: Path) -> None:
 
     assert manifest["from_stage"] == "ingest"
     assert manifest["to_stage"] == "georeference"
+    assert "geograph_lcm_version" in manifest["environment"]
     assert (tmp_path / "outputs" / "pipeline_run.json").exists()
     assert (tmp_path / "outputs" / "georeference" / "_SUCCESS.json").exists()
 

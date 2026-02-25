@@ -4,6 +4,7 @@ import platform
 import subprocess
 import sys
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, Callable
 
@@ -109,6 +110,7 @@ def run_pipeline(
             "python": sys.version,
             "platform": platform.platform(),
             "git_commit": _current_git_commit(),
+            "geograph_lcm_version": _runtime_package_version(),
         },
         "stages": stage_results,
     }
@@ -147,3 +149,14 @@ def _previous_stage_output_dir(stage_name: str, output_root: Path) -> Path | Non
     if idx == 0:
         return None
     return output_root / names[idx - 1]
+
+
+def _runtime_package_version() -> str | None:
+    for package_name in ("geograph-lcm", "geograph_lcm"):
+        try:
+            return version(package_name)
+        except PackageNotFoundError:
+            continue
+        except Exception:
+            return None
+    return None

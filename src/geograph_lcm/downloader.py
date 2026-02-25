@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 import json
 import os
 import time
@@ -130,6 +131,8 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     details_api_fallback_to_feed_url = bool(
         downloader_cfg.get("details_api_fallback_to_feed_url", True)
     )
+    pre_download_min_width = _to_optional_int(downloader_cfg.get("pre_download_min_width"))
+    pre_download_min_height = _to_optional_int(downloader_cfg.get("pre_download_min_height"))
     skip_if_exists = bool(downloader_cfg.get("skip_if_exists", True))
     force_redownload = bool(downloader_cfg.get("force_redownload", False))
     details_api_path_template = str(
@@ -153,7 +156,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
 
     field_mapping = _read_field_mapping(downloader_cfg)
     results_key = str(downloader_cfg.get("results_key", "items"))
-    user_agent = str(geograph_cfg.get("user_agent", "geograph-lcm/0.1"))
+    user_agent = _resolve_user_agent(geograph_cfg)
     max_per_minute = int(geograph_cfg.get("max_per_minute", 60))
     headers = {"User-Agent": user_agent}
     rate_limiter = RateLimiter(max_per_minute=max_per_minute)
@@ -172,6 +175,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     skipped_disallowed_license = 0
     skipped_already_cached = 0
     skipped_missing_full_res = 0
+    skipped_small_dimensions = 0
     details_api_errors = 0
     status = "success"
     error_message: str | None = None
@@ -261,6 +265,8 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
                             api_key=api_key,
                             prefer_details_api_image_url=prefer_details_api_image_url,
                             details_api_fallback_to_feed_url=details_api_fallback_to_feed_url,
+                            pre_download_min_width=pre_download_min_width,
+                            pre_download_min_height=pre_download_min_height,
                             request_params=_redact_request_params(
                                 params=params, redacted_keys={auth_key_param}
                             ),
@@ -274,6 +280,8 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
                     except ValueError as exc:
                         if str(exc) == "missing_full_res_image_url":
                             skipped_missing_full_res += 1
+                        elif str(exc) == "image_dimensions_below_minimum":
+                            skipped_small_dimensions += 1
                         else:
                             image_download_errors += 1
                     except Exception:
@@ -287,6 +295,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
                         "skip_license": skipped_disallowed_license,
                         "skip_cached": skipped_already_cached,
                         "skip_fullres": skipped_missing_full_res,
+                        "skip_small": skipped_small_dimensions,
                         "errors": image_download_errors,
                     },
                     refresh=False,
@@ -320,6 +329,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         "skipped_disallowed_license": skipped_disallowed_license,
         "skipped_already_cached": skipped_already_cached,
         "skipped_missing_full_res": skipped_missing_full_res,
+        "skipped_small_dimensions": skipped_small_dimensions,
         "image_download_errors": image_download_errors,
         "details_api_errors": details_api_errors,
         "raw_metadata_path": str(metadata_path),
@@ -609,6 +619,8 @@ def _download_one_item(
     api_key: str,
     prefer_details_api_image_url: bool,
     details_api_fallback_to_feed_url: bool,
+    pre_download_min_width: int | None,
+    pre_download_min_height: int | None,
     request_params: dict[str, str],
 ) -> dict[str, Any]:
     item_id = item.get(field_mapping.id_field)
@@ -618,6 +630,8 @@ def _download_one_item(
 
     image_url = str(image_url_raw)
     image_url_source = "feed"
+    details_image_width: int | None = None
+    details_image_height: int | None = None
     if prefer_details_api_image_url:
         try:
             details_url = _build_endpoint_url(
@@ -636,10 +650,26 @@ def _download_one_item(
                 rate_limiter=rate_limiter,
             )
             if isinstance(details_payload, (bytes, bytearray)):
-                image_url = _extract_details_api_image_src(bytes(details_payload))
+                details_img = _extract_details_api_image_info(bytes(details_payload))
+                image_url = details_img["src"]
+                details_image_width = details_img["width"]
+                details_image_height = details_img["height"]
+                if _is_below_dimension_threshold(
+                    width=details_image_width,
+                    height=details_image_height,
+                    min_width=pre_download_min_width,
+                    min_height=pre_download_min_height,
+                ):
+                    raise ValueError("image_dimensions_below_minimum")
                 image_url_source = "details_api"
             else:
                 raise ValueError("Details API response is not XML bytes")
+        except ValueError as exc:
+            if str(exc) == "image_dimensions_below_minimum":
+                raise
+            if not details_api_fallback_to_feed_url:
+                raise ValueError("missing_full_res_image_url")
+            image_url_source = "feed_fallback"
         except Exception:
             if not details_api_fallback_to_feed_url:
                 raise ValueError("missing_full_res_image_url")
@@ -675,6 +705,8 @@ def _download_one_item(
         "image_path": str(image_path),
         "image_url": image_url,
         "image_url_source": image_url_source,
+        "details_image_width": details_image_width,
+        "details_image_height": details_image_height,
         "sha256": image_sha256,
         "timestamp": timestamp,
         "lat": lat,
@@ -705,7 +737,7 @@ def _make_progress(total: int, show_progress: bool) -> ProgressLike:
     return _TqdmProgress(tqdm(total=total, desc="download", unit="img"))
 
 
-def _extract_details_api_image_src(xml_bytes: bytes) -> str:
+def _extract_details_api_image_info(xml_bytes: bytes) -> dict[str, int | str | None]:
     root = ET.fromstring(xml_bytes.decode("utf-8", errors="replace"))
     img = root.find(".//img")
     if img is None:
@@ -713,4 +745,58 @@ def _extract_details_api_image_src(xml_bytes: bytes) -> str:
     src = img.attrib.get("src")
     if not src:
         raise ValueError("Missing src attribute on <img> in details API XML")
-    return src
+    return {
+        "src": src,
+        "width": _to_optional_int(img.attrib.get("width")),
+        "height": _to_optional_int(img.attrib.get("height")),
+    }
+
+
+def _is_below_dimension_threshold(
+    width: int | None,
+    height: int | None,
+    min_width: int | None,
+    min_height: int | None,
+) -> bool:
+    if min_width is not None and width is not None and width < min_width:
+        return True
+    if min_height is not None and height is not None and height < min_height:
+        return True
+    return False
+
+
+def _to_optional_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return int(text)
+    except Exception:
+        return None
+
+
+def _resolve_user_agent(geograph_cfg: dict[str, Any]) -> str:
+    configured_version = str(geograph_cfg.get("version", "")).strip()
+    if configured_version:
+        return f"geograph-lcm/{configured_version}"
+
+    # Backward compatibility for older config key.
+    legacy_user_agent = str(geograph_cfg.get("user_agent", "")).strip()
+    if legacy_user_agent:
+        return legacy_user_agent
+
+    runtime_version = _runtime_package_version() or "unknown"
+    return f"geograph-lcm/{runtime_version}"
+
+
+def _runtime_package_version() -> str | None:
+    for package_name in ("geograph-lcm", "geograph_lcm"):
+        try:
+            return pkg_version(package_name)
+        except PackageNotFoundError:
+            continue
+        except Exception:
+            return None
+    return None
