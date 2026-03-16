@@ -44,10 +44,11 @@ def test_output_dir_override_updates_default_dataset_and_validator() -> None:
         "dataset": {"root": "outputs/dataset"},
         "validator": {"output_root": "outputs/validation"},
     }
-    cli._apply_output_dir_override(config, Path("/tmp/custom-out"))
-    assert config["pipeline"]["output_root"] == "/tmp/custom-out"
-    assert config["dataset"]["root"] == "/tmp/custom-out/dataset"
-    assert config["validator"]["output_root"] == "/tmp/custom-out/validation"
+    output_dir = Path("/tmp/custom-out")
+    cli._apply_output_dir_override(config, output_dir)
+    assert config["pipeline"]["output_root"] == str(output_dir)
+    assert config["dataset"]["root"] == str(output_dir / "dataset")
+    assert config["validator"]["output_root"] == str(output_dir / "validation")
 
 
 def test_output_dir_override_preserves_explicit_dataset_and_validator_paths() -> None:
@@ -56,8 +57,9 @@ def test_output_dir_override_preserves_explicit_dataset_and_validator_paths() ->
         "dataset": {"root": "/tmp/my-dataset"},
         "validator": {"output_root": "/tmp/my-validation"},
     }
-    cli._apply_output_dir_override(config, Path("/tmp/custom-out"))
-    assert config["pipeline"]["output_root"] == "/tmp/custom-out"
+    output_dir = Path("/tmp/custom-out")
+    cli._apply_output_dir_override(config, output_dir)
+    assert config["pipeline"]["output_root"] == str(output_dir)
     assert config["dataset"]["root"] == "/tmp/my-dataset"
     assert config["validator"]["output_root"] == "/tmp/my-validation"
 

@@ -148,10 +148,18 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     require_saved_search_id = bool(downloader_cfg.get("require_saved_search_id", True))
     show_progress = bool(downloader_cfg.get("show_progress", True))
     _validate_saved_search_id_requirement(query=query, required=require_saved_search_id)
+    search_queries = _expand_saved_search_queries(query)
+    search_ids = sorted(
+        {
+            q.get("i", "")
+            for q in search_queries
+            if isinstance(q.get("i", ""), str) and q.get("i", "")
+        }
+    )
     print(
         "[download] endpoint="
         f"{endpoint_url} max_items={max_items} page_size={page_size} "
-        f"query_keys={sorted(query.keys())}"
+        f"query_keys={sorted(query.keys())} saved_search_count={len(search_queries)}"
     )
 
     field_mapping = _read_field_mapping(downloader_cfg)
@@ -174,6 +182,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     skipped_out_of_year_range = 0
     skipped_disallowed_license = 0
     skipped_already_cached = 0
+    skipped_duplicate_item_ids = 0
     skipped_missing_full_res = 0
     skipped_small_dimensions = 0
     details_api_errors = 0
@@ -181,125 +190,137 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     error_message: str | None = None
     failure_marker_path = output_dir / "_FAILED.json"
     progress = _make_progress(total=max_items, show_progress=show_progress)
+    seen_item_ids: set[str] = set()
 
     try:
         with (
             requests.Session() as session,
             metadata_path.open("w", encoding="utf-8") as metadata_fh,
         ):
-            page = 1
-            while items_written < max_items:
-                # print(f"[download] fetching page={page} items_written={items_written}")
-                params = dict(query)
-                params.update(
-                    {
-                        auth_key_param: api_key,
-                        page_param: page,
-                        per_page_param: page_size,
-                        format_param: format_value,
-                    }
-                )
-
-                response_json = _request_with_retry(
-                    session=session,
-                    method="GET",
-                    url=endpoint_url,
-                    headers=headers,
-                    params=params,
-                    timeout_s=timeout_s,
-                    max_retries=max_retries,
-                    retry_backoff_s=retry_backoff_s,
-                    rate_limiter=rate_limiter,
-                )
-
-                pages_fetched += 1
-                items = _extract_items(response_json=response_json, results_key=results_key)
-
-                if not isinstance(items, list):
-                    raise ValueError(f"Expected list of items, got {type(items)!r}")
-
-                if not items:
-                    print("[download] no more items returned by API")
+            for search_query in search_queries:
+                if items_written >= max_items:
                     break
-
-                for item in items:
-                    if items_written >= max_items:
-                        break
-                    if not isinstance(item, dict):
-                        item_errors += 1
-                        continue
-                    if _should_skip_item_for_capture_year(item, field_mapping, downloader_cfg):
-                        skipped_out_of_year_range += 1
-                        continue
-                    if _should_skip_item_for_license(item, field_mapping, downloader_cfg):
-                        skipped_disallowed_license += 1
-                        continue
-                    cached_record = _resolve_cached_record(
-                        item=item,
-                        field_mapping=field_mapping,
-                        existing_records=existing_records,
+                page = 1
+                while items_written < max_items:
+                    params = dict(search_query)
+                    params.update(
+                        {
+                            auth_key_param: api_key,
+                            page_param: page,
+                            per_page_param: page_size,
+                            format_param: format_value,
+                        }
                     )
-                    if cached_record is not None:
-                        skipped_already_cached += 1
-                        metadata_fh.write(json.dumps(cached_record, sort_keys=True))
-                        metadata_fh.write("\n")
-                        items_written += 1
-                        progress.update(1)
-                        continue
-                    try:
-                        record = _download_one_item(
+
+                    response_json = _request_with_retry(
+                        session=session,
+                        method="GET",
+                        url=endpoint_url,
+                        headers=headers,
+                        params=params,
+                        timeout_s=timeout_s,
+                        max_retries=max_retries,
+                        retry_backoff_s=retry_backoff_s,
+                        rate_limiter=rate_limiter,
+                    )
+
+                    pages_fetched += 1
+                    items = _extract_items(response_json=response_json, results_key=results_key)
+
+                    if not isinstance(items, list):
+                        raise ValueError(f"Expected list of items, got {type(items)!r}")
+
+                    if not items:
+                        break
+
+                    for item in items:
+                        if items_written >= max_items:
+                            break
+                        if not isinstance(item, dict):
+                            item_errors += 1
+                            continue
+                        item_id = _extract_item_id(item=item, field_mapping=field_mapping)
+                        if item_id is None:
+                            item_errors += 1
+                            continue
+                        if item_id in seen_item_ids:
+                            skipped_duplicate_item_ids += 1
+                            continue
+                        if _should_skip_item_for_capture_year(item, field_mapping, downloader_cfg):
+                            skipped_out_of_year_range += 1
+                            continue
+                        if _should_skip_item_for_license(item, field_mapping, downloader_cfg):
+                            skipped_disallowed_license += 1
+                            continue
+                        cached_record = _resolve_cached_record(
                             item=item,
                             field_mapping=field_mapping,
-                            session=session,
-                            headers=headers,
-                            timeout_s=timeout_s,
-                            max_retries=max_retries,
-                            retry_backoff_s=retry_backoff_s,
-                            rate_limiter=rate_limiter,
-                            images_dir=images_dir,
-                            endpoint_url=endpoint_url,
-                            base_api_url=str(
-                                geograph_cfg.get("api_base_url", "https://api.geograph.org.uk")
-                            ),
-                            details_api_path_template=details_api_path_template,
-                            api_key=api_key,
-                            prefer_details_api_image_url=prefer_details_api_image_url,
-                            details_api_fallback_to_feed_url=details_api_fallback_to_feed_url,
-                            pre_download_min_width=pre_download_min_width,
-                            pre_download_min_height=pre_download_min_height,
-                            request_params=_redact_request_params(
-                                params=params, redacted_keys={auth_key_param}
-                            ),
+                            existing_records=existing_records,
                         )
-                        if record.get("image_url_source") == "feed_fallback":
-                            details_api_errors += 1
-                        metadata_fh.write(json.dumps(record, sort_keys=True))
-                        metadata_fh.write("\n")
-                        items_written += 1
-                        progress.update(1)
-                    except ValueError as exc:
-                        if str(exc) == "missing_full_res_image_url":
-                            skipped_missing_full_res += 1
-                        elif str(exc) == "image_dimensions_below_minimum":
-                            skipped_small_dimensions += 1
-                        else:
+                        if cached_record is not None:
+                            skipped_already_cached += 1
+                            metadata_fh.write(json.dumps(cached_record, sort_keys=True))
+                            metadata_fh.write("\n")
+                            items_written += 1
+                            progress.update(1)
+                            seen_item_ids.add(item_id)
+                            continue
+                        try:
+                            record = _download_one_item(
+                                item=item,
+                                field_mapping=field_mapping,
+                                session=session,
+                                headers=headers,
+                                timeout_s=timeout_s,
+                                max_retries=max_retries,
+                                retry_backoff_s=retry_backoff_s,
+                                rate_limiter=rate_limiter,
+                                images_dir=images_dir,
+                                endpoint_url=endpoint_url,
+                                base_api_url=str(
+                                    geograph_cfg.get("api_base_url", "https://api.geograph.org.uk")
+                                ),
+                                details_api_path_template=details_api_path_template,
+                                api_key=api_key,
+                                prefer_details_api_image_url=prefer_details_api_image_url,
+                                details_api_fallback_to_feed_url=details_api_fallback_to_feed_url,
+                                pre_download_min_width=pre_download_min_width,
+                                pre_download_min_height=pre_download_min_height,
+                                request_params=_redact_request_params(
+                                    params=params, redacted_keys={auth_key_param}
+                                ),
+                            )
+                            if record.get("image_url_source") == "feed_fallback":
+                                details_api_errors += 1
+                            metadata_fh.write(json.dumps(record, sort_keys=True))
+                            metadata_fh.write("\n")
+                            items_written += 1
+                            progress.update(1)
+                            seen_item_ids.add(item_id)
+                        except ValueError as exc:
+                            if str(exc) == "missing_full_res_image_url":
+                                skipped_missing_full_res += 1
+                            elif str(exc) == "image_dimensions_below_minimum":
+                                skipped_small_dimensions += 1
+                            else:
+                                image_download_errors += 1
+                        except Exception:
                             image_download_errors += 1
-                    except Exception:
-                        image_download_errors += 1
 
-                page += 1
-                progress.set_postfix(
-                    {
-                        "written": items_written,
-                        "skip_year": skipped_out_of_year_range,
-                        "skip_license": skipped_disallowed_license,
-                        "skip_cached": skipped_already_cached,
-                        "skip_fullres": skipped_missing_full_res,
-                        "skip_small": skipped_small_dimensions,
-                        "errors": image_download_errors,
-                    },
-                    refresh=False,
-                )
+                    page += 1
+                    progress.set_postfix(
+                        {
+                            "written": items_written,
+                            "skip_year": skipped_out_of_year_range,
+                            "skip_license": skipped_disallowed_license,
+                            "skip_cached": skipped_already_cached,
+                            "skip_dupe": skipped_duplicate_item_ids,
+                            "skip_fullres": skipped_missing_full_res,
+                            "skip_small": skipped_small_dimensions,
+                            "errors": image_download_errors,
+                        },
+                        refresh=False,
+                    )
     except KeyboardInterrupt:
         status = "interrupted"
         error_message = "KeyboardInterrupt"
@@ -322,12 +343,15 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         "geograph_api_key_source": api_key_source,
         "page_size": page_size,
         "max_items": max_items,
+        "saved_search_ids": search_ids,
+        "saved_search_count": len(search_queries),
         "pages_fetched": pages_fetched,
         "items_written": items_written,
         "item_errors": item_errors,
         "skipped_out_of_year_range": skipped_out_of_year_range,
         "skipped_disallowed_license": skipped_disallowed_license,
         "skipped_already_cached": skipped_already_cached,
+        "skipped_duplicate_item_ids": skipped_duplicate_item_ids,
         "skipped_missing_full_res": skipped_missing_full_res,
         "skipped_small_dimensions": skipped_small_dimensions,
         "image_download_errors": image_download_errors,
@@ -424,7 +448,24 @@ def _validate_syndicator_query_keys(query: dict[str, Any]) -> None:
 
 
 def _sanitize_query(query: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in query.items() if v is not None and v != ""}
+    out: dict[str, Any] = {}
+    for key, value in query.items():
+        if value is None:
+            continue
+        if isinstance(value, str):
+            text = value.strip()
+            if not text:
+                continue
+            out[key] = text
+            continue
+        if isinstance(value, list):
+            cleaned = [str(v).strip() for v in value if str(v).strip()]
+            if not cleaned:
+                continue
+            out[key] = cleaned
+            continue
+        out[key] = value
+    return out
 
 
 def _policy_enforcement_summary(policy: Any) -> dict[str, str]:
@@ -442,11 +483,54 @@ def _policy_enforcement_summary(policy: Any) -> dict[str, str]:
 def _validate_saved_search_id_requirement(query: dict[str, Any], required: bool) -> None:
     if not required:
         return
-    if "i" not in query:
+    if not _extract_saved_search_ids(query):
         raise ValueError(
             "downloader.query.i (Geograph saved-search ID) is required for policy-constrained "
             "retrieval. Set it in config or pass --geograph-search-id."
         )
+
+
+def _extract_saved_search_ids(query: dict[str, Any]) -> list[str]:
+    raw = query.get("i")
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        ids = [str(v).strip() for v in raw if str(v).strip()]
+    else:
+        text = str(raw).strip()
+        if not text:
+            return []
+        ids = [part.strip() for part in text.split(",") if part.strip()]
+    # Preserve order while removing duplicates.
+    seen: set[str] = set()
+    unique: list[str] = []
+    for item in ids:
+        if item in seen:
+            continue
+        seen.add(item)
+        unique.append(item)
+    return unique
+
+
+def _expand_saved_search_queries(query: dict[str, Any]) -> list[dict[str, Any]]:
+    ids = _extract_saved_search_ids(query)
+    if not ids:
+        return [dict(query)]
+    base_query = {k: v for k, v in query.items() if k != "i"}
+    expanded = []
+    for saved_search_id in ids:
+        one = dict(base_query)
+        one["i"] = saved_search_id
+        expanded.append(one)
+    return expanded
+
+
+def _extract_item_id(item: dict[str, Any], field_mapping: FieldMapping) -> str | None:
+    raw = item.get(field_mapping.id_field)
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    return text if text else None
 
 
 def _should_skip_item_for_capture_year(

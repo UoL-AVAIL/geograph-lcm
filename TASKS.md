@@ -54,7 +54,7 @@ Progress tracker for `geograph-lcm`.
 - [x] Implement license compatibility filtering
 - [x] Implement deduplication
 - [x] Produce curated manifest contract for downstream stages
-- [ ] Define and document a production Geograph saved-search (`query.i`) for policy-constrained retrieval
+- [x] Define and document production Geograph saved-search ID support (`query.i`) for policy-constrained retrieval (single, comma-separated, or YAML list)
 
 ## Milestone 5: Georeference + LCM Matching
 
@@ -77,3 +77,9 @@ Progress tracker for `geograph-lcm`.
 - [x] Add runbook for reproducible runs and resume behavior
 - [x] Add policy checks for licensing/ethics constraints
 - [x] Add CLI `--output-dir` override for pipeline outputs
+
+## Milestone 8: Inspection and Visualization
+
+- [x] Add in-depth dataset inspection notebook
+- [x] Add interactive Bokeh map explorer for `labels.csv`
+- [x] Add map-viewer unit tests

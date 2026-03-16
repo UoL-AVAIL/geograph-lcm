@@ -681,3 +681,91 @@ def test_skips_redownload_when_item_is_cached(
     second_summary = downloader.run(config=config, input_dir=None, output_dir=tmp_path / "download")
     assert second_summary["items_written"] == 1
     assert second_summary["skipped_already_cached"] == 1
+
+
+def test_extract_saved_search_ids_supports_comma_and_list() -> None:
+    assert downloader._extract_saved_search_ids({"i": "100, 200,200, 300"}) == ["100", "200", "300"]
+    assert downloader._extract_saved_search_ids({"i": ["100", "200", "100"]}) == ["100", "200"]
+    assert downloader._extract_saved_search_ids({"i": ""}) == []
+
+
+def test_runs_multiple_saved_searches_and_deduplicates_items(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GEOGRAPH_API_KEY", "test-key")
+    scripted = [
+        # Search 1, page 1
+        FakeResponse(
+            headers={"content-type": "application/json"},
+            json_data={
+                "items": [
+                    {
+                        "id": "a1",
+                        "image_url": "https://images.example/a1.jpg",
+                        "license": "CC-BY",
+                        "captured_at": "2020-01-01T00:00:00Z",
+                        "lat": 52.0,
+                        "lon": -1.0,
+                    }
+                ]
+            },
+        ),
+        FakeResponse(content=b"image-a1"),
+        # Search 1, page 2 (end)
+        FakeResponse(headers={"content-type": "application/json"}, json_data={"items": []}),
+        # Search 2, page 1 (duplicate a1 + new a2)
+        FakeResponse(
+            headers={"content-type": "application/json"},
+            json_data={
+                "items": [
+                    {
+                        "id": "a1",
+                        "image_url": "https://images.example/a1.jpg",
+                        "license": "CC-BY",
+                        "captured_at": "2020-01-01T00:00:00Z",
+                        "lat": 52.0,
+                        "lon": -1.0,
+                    },
+                    {
+                        "id": "a2",
+                        "image_url": "https://images.example/a2.jpg",
+                        "license": "CC-BY",
+                        "captured_at": "2020-01-01T00:00:00Z",
+                        "lat": 53.0,
+                        "lon": -2.0,
+                    },
+                ]
+            },
+        ),
+        FakeResponse(content=b"image-a2"),
+        # Search 2, page 2 (end)
+        FakeResponse(headers={"content-type": "application/json"}, json_data={"items": []}),
+    ]
+    fake_session = FakeSession(scripted)
+    monkeypatch.setattr(downloader.requests, "Session", lambda: fake_session)
+
+    summary = downloader.run(
+        config={
+            "geograph": {"api_base_url": "https://api.geograph.org.uk", "max_per_minute": 0},
+            "downloader": {
+                "query": {"i": ["100", "200"]},
+                "results_key": "items",
+                "require_saved_search_id": True,
+                "prefer_details_api_image_url": False,
+            },
+        },
+        input_dir=None,
+        output_dir=tmp_path / "download",
+    )
+
+    assert summary["saved_search_count"] == 2
+    assert summary["saved_search_ids"] == ["100", "200"]
+    assert summary["items_written"] == 2
+    assert summary["skipped_duplicate_item_ids"] == 1
+    metadata_lines = (
+        (tmp_path / "download" / "raw" / "metadata.jsonl")
+        .read_text(encoding="utf-8")
+        .strip()
+        .splitlines()
+    )
+    assert len(metadata_lines) == 2
