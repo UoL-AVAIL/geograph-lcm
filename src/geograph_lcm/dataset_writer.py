@@ -19,6 +19,11 @@ LABEL_COLUMNS = [
     "license",
     "sha256",
     "georef_confidence",
+    "lcm_window_agreement",
+    "lcm_window_majority_value",
+    "lcm_center_majority_match",
+    "lcm_label_confidence",
+    "lcm_low_confidence",
 ]
 
 
@@ -87,6 +92,15 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
                         "license": _to_string(record.get("license_raw", record.get("license"))),
                         "sha256": _to_string(record.get("sha256")),
                         "georef_confidence": _to_string(record.get("georef_confidence")),
+                        "lcm_window_agreement": _to_string(record.get("lcm_window_agreement")),
+                        "lcm_window_majority_value": _to_string(
+                            record.get("lcm_window_majority_value")
+                        ),
+                        "lcm_center_majority_match": _to_string(
+                            record.get("lcm_center_majority_match")
+                        ),
+                        "lcm_label_confidence": _to_string(record.get("lcm_label_confidence")),
+                        "lcm_low_confidence": _to_string(record.get("lcm_low_confidence")),
                     }
                     writer.writerow(row)
                     rows_written += 1

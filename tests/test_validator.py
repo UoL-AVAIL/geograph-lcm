@@ -225,3 +225,77 @@ def test_validator_fails_ethics_policy_when_required_field_missing(tmp_path: Pat
     report = yaml.safe_load((tmp_path / "validation" / "report.yaml").read_text(encoding="utf-8"))
     assert report["checks"]["policy"]["ethics"]["enabled"] is True
     assert report["checks"]["policy"]["ethics"]["missing_required_field"] is True
+
+
+def test_validator_reports_label_noise_threshold_warnings(tmp_path: Path) -> None:
+    labels_path = tmp_path / "dataset" / "labels.csv"
+    fieldnames = [
+        "id",
+        "image_path",
+        "lat",
+        "lon",
+        "lcm_l2",
+        "lcm_l3",
+        "timestamp",
+        "license",
+        "sha256",
+        "georef_confidence",
+        "lcm_window_agreement",
+        "lcm_label_confidence",
+    ]
+    rows = [
+        {
+            "id": "1",
+            "image_path": "outputs/dataset/images/1.jpg",
+            "lat": "52.0",
+            "lon": "-1.0",
+            "lcm_l2": "Semi-natural Grassland",
+            "lcm_l3": "Neutral Grassland",
+            "timestamp": "2020-01-01",
+            "license": "https://creativecommons.org/licenses/by-sa/2.0/",
+            "sha256": "sha1",
+            "georef_confidence": "high",
+            "lcm_window_agreement": "0.95",
+            "lcm_label_confidence": "0.90",
+        },
+        {
+            "id": "2",
+            "image_path": "outputs/dataset/images/2.jpg",
+            "lat": "53.0",
+            "lon": "-2.0",
+            "lcm_l2": "Mountain, Heath and Bog",
+            "lcm_l3": "Heather Grassland",
+            "timestamp": "2021-01-01",
+            "license": "https://creativecommons.org/licenses/by-sa/2.0/",
+            "sha256": "sha2",
+            "georef_confidence": "high",
+            "lcm_window_agreement": "0.40",
+            "lcm_label_confidence": "0.50",
+        },
+    ]
+    _write_labels(labels_path, rows, fieldnames)
+
+    summary = validator.run(
+        config={
+            "dataset": {"root": str(tmp_path / "dataset")},
+            "validator": {
+                "output_root": str(tmp_path / "validation"),
+                "label_noise": {
+                    "enabled": True,
+                    "enforce_thresholds": False,
+                    "min_window_agreement": 0.6,
+                    "min_label_confidence": 0.65,
+                },
+            },
+        },
+        input_dir=None,
+        output_dir=tmp_path / "validate",
+    )
+
+    assert summary["status"] == "warn"
+    report = yaml.safe_load((tmp_path / "validation" / "report.yaml").read_text(encoding="utf-8"))
+    assert report["checks"]["label_noise"]["enabled"] is True
+    assert report["checks"]["label_noise"]["below_threshold_count"] == 1
+    assert report["checks"]["label_noise"]["below_threshold_examples"] == ["2"]
+    assert report["metrics"]["lcm_label_confidence"]["count"] == 2
+    assert report["metrics"]["lcm_window_agreement"]["count"] == 2
