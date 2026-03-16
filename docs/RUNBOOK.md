@@ -36,6 +36,34 @@ Run a single stage:
 geograph-lcm --from-stage match_lcm --to-stage match_lcm --config config/default.yaml
 ```
 
+## Saved-search IDs (`query.i`)
+
+Use Geograph saved-search IDs to lock policy-constrained retrieval.
+
+In `config/default.yaml`:
+
+```yaml
+downloader:
+	query:
+		i: "215369747,215369748"
+```
+
+You can also provide IDs as a YAML list:
+
+```yaml
+downloader:
+	query:
+		i:
+			- "215369747"
+			- "215369748"
+```
+
+CLI override (comma-separated IDs supported):
+
+```bash
+geograph-lcm --from-stage download --to-stage download --config config/default.yaml --geograph-search-id 215369747,215369748
+```
+
 ## Stage outputs
 
 Default root is `outputs/`. If `--output-dir` is set, replace `outputs/` below with that path.
@@ -89,3 +117,11 @@ Use the Bokeh app to inspect all points on a UK map, colored by `lcm_l3`, with c
 ```bash
 bokeh serve apps/lcm_map_bokeh.py --show --args --labels outputs/dataset/labels.csv
 ```
+
+Optional page title:
+
+```bash
+bokeh serve apps/lcm_map_bokeh.py --show --args --labels outputs/dataset/labels.csv --title "My LCM Explorer"
+```
+
+If `labels.csv` is under a custom output root, point `--labels` at that file directly.
