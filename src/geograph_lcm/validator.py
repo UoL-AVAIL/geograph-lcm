@@ -93,7 +93,10 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
 
         label_noise_checks = _label_noise_checks(rows, fieldnames, label_noise_cfg)
         checks["label_noise"] = label_noise_checks
-        if label_noise_checks.get("enabled") and label_noise_checks.get("below_threshold_count", 0) > 0:
+        if (
+            label_noise_checks.get("enabled")
+            and label_noise_checks.get("below_threshold_count", 0) > 0
+        ):
             below_count = int(label_noise_checks["below_threshold_count"])
             if bool(label_noise_checks.get("enforce_thresholds", False)):
                 errors.append(
