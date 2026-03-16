@@ -90,7 +90,12 @@ def test_lcm_matcher_writes_matched_manifest(
     )
 
     summary = lcm_matcher.run(
-        config={"lcm": {"taxonomy_path": "config/lcm_taxonomy.yaml"}},
+        config={
+            "lcm": {
+                "taxonomy_path": "config/lcm_taxonomy.yaml",
+                "noise": {"neighborhood_window_px": 3, "min_label_confidence": 0.9},
+            }
+        },
         input_dir=georef_dir,
         output_dir=tmp_path / "match",
         lcm_assets=[asset],
@@ -112,6 +117,11 @@ def test_lcm_matcher_writes_matched_manifest(
     assert parsed[0]["lcm_l2"] == "Semi-natural Grassland"
     assert parsed[0]["lcm_l3_code"] == 7
     assert parsed[0]["lcm_l2_code"] == 5
+    assert parsed[0]["lcm_window_agreement"] == 1.0
+    assert parsed[0]["lcm_window_majority_value"] == 7
+    assert parsed[0]["lcm_center_majority_match"] is True
+    assert parsed[0]["lcm_label_confidence"] == 0.88
+    assert parsed[0]["lcm_low_confidence"] is True
 
 
 def test_taxonomy_loader_reads_int_keys() -> None:

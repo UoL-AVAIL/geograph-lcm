@@ -78,6 +78,9 @@ georeferencer:
 lcm:
   catalog_path: "config/lcm_catalog.yaml"
   taxonomy_path: "config/lcm_taxonomy.yaml"
+  noise:
+    neighborhood_window_px: 3
+    min_label_confidence: 0.65
   year_selection:
     strategy: "capture_year_then_nearest"
     tie_breaker: "earlier_year"
@@ -92,6 +95,11 @@ validator:
   random_sample_size: 50
   per_class_sample_size: 20
   top_classes_for_sampling: 5
+  label_noise:
+    enabled: true
+    enforce_thresholds: false
+    min_window_agreement: 0.60
+    min_label_confidence: 0.65
   policy:
     licensing:
       enforce_allowed_licenses: false

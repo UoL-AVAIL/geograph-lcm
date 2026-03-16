@@ -40,6 +40,7 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     per_class_sample_size = int(validator_cfg.get("per_class_sample_size", 20))
     top_classes_for_sampling = int(validator_cfg.get("top_classes_for_sampling", 5))
     policy_cfg = validator_cfg.get("policy", {})
+    label_noise_cfg = validator_cfg.get("label_noise", {})
 
     checks: dict[str, Any] = {}
     metrics: dict[str, Any] = {}
@@ -89,6 +90,19 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
             errors.append(
                 f"Policy violation: missing required ethics field '{policy_checks['ethics']['field_name']}'"
             )
+
+        label_noise_checks = _label_noise_checks(rows, fieldnames, label_noise_cfg)
+        checks["label_noise"] = label_noise_checks
+        if label_noise_checks.get("enabled") and label_noise_checks.get("below_threshold_count", 0) > 0:
+            below_count = int(label_noise_checks["below_threshold_count"])
+            if bool(label_noise_checks.get("enforce_thresholds", False)):
+                errors.append(
+                    f"Label-noise policy violation: {below_count} rows below configured confidence/agreement thresholds"
+                )
+            else:
+                warnings.append(
+                    f"Label-noise check: {below_count} rows below configured confidence/agreement thresholds"
+                )
 
         metrics = _distribution_metrics(rows)
 
@@ -177,15 +191,95 @@ def _distribution_metrics(rows: list[dict[str, str]]) -> dict[str, Any]:
         for row in rows
         if row.get("timestamp", "").strip()
     )
+    label_conf_values = _parse_float_values(rows, "lcm_label_confidence")
+    window_agreement_values = _parse_float_values(rows, "lcm_window_agreement")
     year_counts.pop(None, None)
+    confidence_stats = _basic_stats(label_conf_values)
+    agreement_stats = _basic_stats(window_agreement_values)
     return {
         "rows": len(rows),
         "unique_classes_l3": len(class_counts),
         "top_classes_l3": class_counts.most_common(10),
         "georef_confidence_counts": dict(conf_counts),
+        "lcm_label_confidence": confidence_stats,
+        "lcm_window_agreement": agreement_stats,
         "capture_year_counts": dict(
             sorted((k, v) for k, v in year_counts.items() if k is not None)
         ),
+    }
+
+
+def _label_noise_checks(
+    rows: list[dict[str, str]], fieldnames: list[str], cfg: dict[str, Any]
+) -> dict[str, Any]:
+    enabled = bool(cfg.get("enabled", True))
+    enforce_thresholds = bool(cfg.get("enforce_thresholds", False))
+    min_agreement = _to_float(cfg.get("min_window_agreement", 0.6), default=0.6)
+    min_confidence = _to_float(cfg.get("min_label_confidence", 0.65), default=0.65)
+    has_agreement = "lcm_window_agreement" in fieldnames
+    has_confidence = "lcm_label_confidence" in fieldnames
+
+    if not enabled:
+        return {
+            "enabled": False,
+            "enforce_thresholds": enforce_thresholds,
+            "has_required_columns": has_agreement and has_confidence,
+            "min_window_agreement": min_agreement,
+            "min_label_confidence": min_confidence,
+            "below_threshold_count": 0,
+            "below_threshold_examples": [],
+        }
+
+    if not has_agreement or not has_confidence:
+        return {
+            "enabled": True,
+            "enforce_thresholds": enforce_thresholds,
+            "has_required_columns": False,
+            "min_window_agreement": min_agreement,
+            "min_label_confidence": min_confidence,
+            "below_threshold_count": 0,
+            "below_threshold_examples": [],
+        }
+
+    below: list[str] = []
+    for row in rows:
+        item_id = str(row.get("id", "")).strip()
+        agreement = _to_float(row.get("lcm_window_agreement"), default=None)
+        confidence = _to_float(row.get("lcm_label_confidence"), default=None)
+        if agreement is None or confidence is None:
+            continue
+        if agreement < min_agreement or confidence < min_confidence:
+            if item_id:
+                below.append(item_id)
+
+    return {
+        "enabled": True,
+        "enforce_thresholds": enforce_thresholds,
+        "has_required_columns": True,
+        "min_window_agreement": min_agreement,
+        "min_label_confidence": min_confidence,
+        "below_threshold_count": len(below),
+        "below_threshold_examples": sorted(below)[:10],
+    }
+
+
+def _parse_float_values(rows: list[dict[str, str]], key: str) -> list[float]:
+    values: list[float] = []
+    for row in rows:
+        value = _to_float(row.get(key), default=None)
+        if value is not None:
+            values.append(value)
+    return values
+
+
+def _basic_stats(values: list[float]) -> dict[str, Any]:
+    if not values:
+        return {"count": 0, "min": None, "max": None, "mean": None}
+    return {
+        "count": len(values),
+        "min": round(min(values), 4),
+        "max": round(max(values), 4),
+        "mean": round(sum(values) / len(values), 4),
     }
 
 
@@ -317,3 +411,10 @@ def _ethics_policy_check(
 
 def _normalize_license(value: str) -> str:
     return str(value).strip().lower().rstrip("/")
+
+
+def _to_float(value: Any, default: float | None) -> float | None:
+    try:
+        return float(value)
+    except Exception:
+        return default

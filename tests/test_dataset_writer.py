@@ -29,6 +29,11 @@ def test_dataset_writer_exports_labels_and_images(tmp_path: Path) -> None:
                         "license_raw": "http://creativecommons.org/licenses/by-sa/2.0/",
                         "sha256": "abc123",
                         "georef_confidence": "high",
+                        "lcm_window_agreement": 0.78,
+                        "lcm_window_majority_value": 6,
+                        "lcm_center_majority_match": True,
+                        "lcm_label_confidence": 0.81,
+                        "lcm_low_confidence": False,
                         "lcm_match_status": "matched",
                         "selected_lcm_year": 2015,
                     }
@@ -68,6 +73,9 @@ def test_dataset_writer_exports_labels_and_images(tmp_path: Path) -> None:
     assert len(rows) == 1
     assert rows[0]["id"] == "1"
     assert rows[0]["lcm_l3"] == "Neutral Grassland"
+    assert rows[0]["lcm_window_agreement"] == "0.78"
+    assert rows[0]["lcm_label_confidence"] == "0.81"
+    assert rows[0]["lcm_low_confidence"] == "False"
     assert Path(rows[0]["image_path"]).exists()
 
     readme_path = dataset_root / "README.md"
