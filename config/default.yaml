@@ -79,7 +79,9 @@ lcm:
   catalog_path: "config/lcm_catalog.yaml"
   taxonomy_path: "config/lcm_taxonomy.yaml"
   noise:
+    # Odd window size in pixels around the matched point (3 => 3x3 neighborhood).
     neighborhood_window_px: 3
+    # Matcher-level low-confidence threshold for lcm_low_confidence flag.
     min_label_confidence: 0.65
   year_selection:
     strategy: "capture_year_then_nearest"
@@ -97,8 +99,11 @@ validator:
   top_classes_for_sampling: 5
   label_noise:
     enabled: true
+    # Keep false while tuning; set true to fail validation when thresholds are breached.
     enforce_thresholds: false
+    # Minimum local agreement accepted by validator label-noise checks.
     min_window_agreement: 0.60
+    # Minimum composite label confidence accepted by validator label-noise checks.
     min_label_confidence: 0.65
   policy:
     licensing:

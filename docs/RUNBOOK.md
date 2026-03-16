@@ -86,6 +86,56 @@ To rerun completed stages, use `--force`:
 geograph-lcm --from-stage match_lcm --to-stage match_lcm --config config/default.yaml --force
 ```
 
+## Label-noise mitigation workflow
+
+To recompute noise metrics for an existing dataset, rerun from `match_lcm` through `validate`:
+
+```bash
+geograph-lcm --from-stage match_lcm --to-stage validate --config config/default.yaml --force
+```
+
+If using a custom output root:
+
+```bash
+geograph-lcm --from-stage match_lcm --to-stage validate --config config/default.yaml --output-dir /path/to/my-run --force
+```
+
+### Before/after threshold comparison
+
+1. Save the current validation report:
+
+```bash
+cp outputs/validation/report.yaml outputs/validation/report.before.yaml
+```
+
+2. Adjust thresholds in `config/default.yaml`:
+	- `lcm.noise.min_label_confidence`
+	- `validator.label_noise.min_window_agreement`
+	- `validator.label_noise.min_label_confidence`
+
+3. Rerun validation path:
+
+```bash
+geograph-lcm --from-stage match_lcm --to-stage validate --config config/default.yaml --force
+```
+
+4. Compare these fields in `outputs/validation/report.yaml`:
+	- `checks.label_noise.below_threshold_count`
+	- `metrics.lcm_label_confidence`
+	- `metrics.lcm_window_agreement`
+
+### How to interpret new label-noise fields
+
+- `lcm_window_agreement`: fraction of neighborhood pixels that agree with the majority class around the sampled point.
+- `lcm_label_confidence`: composite confidence score from neighborhood agreement and georeference confidence.
+- `lcm_low_confidence`: boolean flag set when `lcm_label_confidence` is below configured threshold.
+
+Default tuning intent:
+
+- Keep `enforce_thresholds: false` first to observe warning counts.
+- Tighten thresholds once per-class sampling looks stable.
+- Switch `enforce_thresholds: true` only after warning counts are acceptable for your target dataset size.
+
 ## Common failures and fixes
 
 Missing Geograph API key:
