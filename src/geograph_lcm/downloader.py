@@ -409,13 +409,11 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     return summary
 
 
-def _likely_syndicator_result_cap_hit(endpoint_url: str, max_items: int, items_written: int) -> bool:
+def _likely_syndicator_result_cap_hit(
+    endpoint_url: str, max_items: int, items_written: int
+) -> bool:
     normalized_endpoint = endpoint_url.lower()
-    return (
-        "syndicator.php" in normalized_endpoint
-        and max_items > 1000
-        and items_written == 1000
-    )
+    return "syndicator.php" in normalized_endpoint and max_items > 1000 and items_written == 1000
 
 
 def _build_endpoint_url(base_url: str, endpoint_path: str) -> str:
