@@ -245,6 +245,24 @@ def test_request_with_retry_recovers_from_temporary_failure() -> None:
     assert response == {"items": []}
 
 
+def test_detects_likely_syndicator_result_cap() -> None:
+    assert downloader._likely_syndicator_result_cap_hit(
+        endpoint_url="https://api.geograph.org.uk/syndicator.php",
+        max_items=5000,
+        items_written=1000,
+    )
+    assert not downloader._likely_syndicator_result_cap_hit(
+        endpoint_url="https://api.geograph.org.uk/syndicator.php",
+        max_items=1000,
+        items_written=1000,
+    )
+    assert not downloader._likely_syndicator_result_cap_hit(
+        endpoint_url="https://api.geograph.org.uk/export.csv.php",
+        max_items=5000,
+        items_written=1000,
+    )
+
+
 def test_skips_items_outside_capture_year_range(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

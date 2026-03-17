@@ -186,6 +186,8 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
     skipped_missing_full_res = 0
     skipped_small_dimensions = 0
     details_api_errors = 0
+    likely_result_cap_hit = False
+    cap_warning: str | None = None
     status = "success"
     error_message: str | None = None
     failure_marker_path = output_dir / "_FAILED.json"
@@ -356,6 +358,8 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         "skipped_small_dimensions": skipped_small_dimensions,
         "image_download_errors": image_download_errors,
         "details_api_errors": details_api_errors,
+        "likely_result_cap_hit": likely_result_cap_hit,
+        "cap_warning": cap_warning,
         "raw_metadata_path": str(metadata_path),
         "raw_images_dir": str(images_dir),
         "retrieval_policy": downloader_cfg.get("retrieval_policy", {}),
@@ -370,6 +374,22 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         **summary,
         "output_dir": str(output_dir),
     }
+
+    if _likely_syndicator_result_cap_hit(
+        endpoint_url=endpoint_url,
+        max_items=max_items,
+        items_written=items_written,
+    ):
+        likely_result_cap_hit = True
+        cap_warning = (
+            "Likely Geograph Syndicator result cap reached at 1000 items for this query. "
+            "Consider splitting retrieval across multiple saved-search IDs or using "
+            "bulk-oriented sources (database dumps / full-text API) after confirming policy."
+        )
+        summary["likely_result_cap_hit"] = True
+        summary["cap_warning"] = cap_warning
+        print(f"[download] warning: {cap_warning}")
+
     write_json(output_dir / "download_summary.json", summary)
     if status == "success":
         if failure_marker_path.exists():
@@ -387,6 +407,15 @@ def run(config: dict[str, Any], input_dir: Path | None, output_dir: Path) -> dic
         f"image_download_errors={image_download_errors}"
     )
     return summary
+
+
+def _likely_syndicator_result_cap_hit(endpoint_url: str, max_items: int, items_written: int) -> bool:
+    normalized_endpoint = endpoint_url.lower()
+    return (
+        "syndicator.php" in normalized_endpoint
+        and max_items > 1000
+        and items_written == 1000
+    )
 
 
 def _build_endpoint_url(base_url: str, endpoint_path: str) -> str:
