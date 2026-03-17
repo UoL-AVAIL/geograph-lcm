@@ -1,0 +1,120 @@
+﻿pipeline:
+  output_root: "outputs/big_run"
+  stage_order:
+    - download
+    - ingest
+    - curate
+    - georeference
+    - match_lcm
+    - write_dataset
+    - validate
+
+geograph:
+  api_base_url: "https://api.geograph.org.uk"
+  api_key_env_var: "GEOGRAPH_API_KEY"
+  version: "0.2.0"
+  max_per_minute: 240
+
+downloader:
+  endpoint_path: "/syndicator.php"
+  page_size: 100
+  max_items: 5000
+  timeout_s: 30.0
+  max_retries: 3
+  retry_backoff_s: 1.0
+  auth_key_param: "key"
+  page_param: "page"
+  per_page_param: "perpage"
+  format_param: "format"
+  format_value: "JSON"
+  show_progress: true
+  prefer_details_api_image_url: false
+  details_api_fallback_to_feed_url: false
+  details_api_path_template: "/api/photo/{photo_id}/{api_key}"
+  pre_download_min_width: null
+  pre_download_min_height: null
+  skip_if_exists: true
+  force_redownload: false
+  allowed_licenses:
+    - "http://creativecommons.org/licenses/by-sa/2.0/"
+    - "https://creativecommons.org/licenses/by-sa/2.0/"
+  require_saved_search_id: false
+  query:
+    # `i` is a Geograph saved-search ID (or a list/comma-separated list of IDs).
+    # Use this to lock policy-constrained retrieval.
+    # (e.g., UK-wide, capture years 2015-2024, and ground-level preference).
+    i: "215369747"
+    #text: "grassland"
+  results_key: ""
+  retrieval_policy:
+    geographic_scope: "uk_wide"
+    capture_year_min: 2015
+    capture_year_max: 2024
+    ground_level_only: true
+    prefilter_on_download: false
+    sampling_strategy: "spatially_balanced"
+    class_balancing_strategy: "post_lcm_match"
+    target_batch_size: 5000
+  field_mapping:
+    id_field: "guid"
+    image_url_field: "thumb"
+    license_field: "licence"
+    timestamp_field: "imageTaken"
+    lat_field: "lat"
+    lon_field: "long"
+
+
+curator:
+  min_width: 640
+  min_height: 480
+  blur_threshold: 100.0
+  allowed_licenses:
+    - "CC-BY-SA"
+    - "CC-BY"
+
+georeferencer:
+  max_georef_radius_m: 50
+
+lcm:
+  catalog_path: "config/lcm_catalog.yaml"
+  taxonomy_path: "config/lcm_taxonomy.yaml"
+  noise:
+    # Odd window size in pixels around the matched point (3 => 3x3 neighborhood).
+    neighborhood_window_px: 3
+    # Matcher-level low-confidence threshold for lcm_low_confidence flag.
+    min_label_confidence: 0.65
+  year_selection:
+    strategy: "capture_year_then_nearest"
+    tie_breaker: "earlier_year"
+  fallback_when_no_capture_year: "latest_available"
+
+dataset:
+  root: "outputs/big_run/dataset"
+
+validator:
+  output_root: "outputs/big_run/validation"
+  random_seed: 42
+  random_sample_size: 50
+  per_class_sample_size: 20
+  top_classes_for_sampling: 5
+  label_noise:
+    enabled: true
+    # Keep false while tuning; set true to fail validation when thresholds are breached.
+    enforce_thresholds: false
+    # Minimum local agreement accepted by validator label-noise checks.
+    min_window_agreement: 0.60
+    # Minimum composite label confidence accepted by validator label-noise checks.
+    min_label_confidence: 0.65
+  policy:
+    licensing:
+      enforce_allowed_licenses: false
+      allowed_licenses:
+        - "http://creativecommons.org/licenses/by-sa/2.0/"
+        - "https://creativecommons.org/licenses/by-sa/2.0/"
+    ethics:
+      require_review_field: false
+      review_field_name: "ethics_review_status"
+      allowed_values:
+        - "approved"
+        - "not_applicable"
+
